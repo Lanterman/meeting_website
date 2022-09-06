@@ -3,3 +3,6 @@
 __pycache__/
 
 uploaded_photo/*
+alembic/versions/*
+
+meeting_website.db
