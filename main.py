@@ -26,3 +26,5 @@ async def shutdown() -> None:
 app.include_router(user_router)
 
 AUTH = ""
+
+print("изменять токены при окончании срока использования")
