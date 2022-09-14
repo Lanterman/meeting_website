@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 
 from config.db import metadata, engine, database
+from scr.main.api import main_router
 from scr.users.api import user_router
 
 app = FastAPI()
@@ -24,7 +25,8 @@ async def shutdown() -> None:
 
 
 app.include_router(user_router)
+app.include_router(main_router)
 
 AUTH = ""
 
-print("изменять токены при окончании срока использования")
+print(" 14. users chat, that like each other")

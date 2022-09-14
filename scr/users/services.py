@@ -1,13 +1,15 @@
 import os
 import jwt
 import string
+import secrets
 import hashlib
 
 from random import choice
 from fastapi import BackgroundTasks
 
-from config.utils import PATH_TO_USER_DIRECTORIES, SECRET, ALGORITHM
+from config.utils import PATH_TO_USER_DIRECTORIES, ALGORITHM
 from . import models, schemas
+from ..main.services import get_search_parameters
 
 
 def create_random_salt(length=12) -> str:
@@ -47,10 +49,37 @@ def remove_user_directory(user_id) -> None:
         os.rmdir(f"{PATH_TO_USER_DIRECTORIES}/{user_id}")
 
 
+async def get_users(user_id: int) -> list[models.Users]:
+    """Get users mathing search parameters"""
+
+    search_parameters = await get_search_parameters(user_id)
+    age_range = range(search_parameters.search_by_age_to, search_parameters.search_by_age_from + 1)
+
+    if search_parameters.search_by_gender == "Both":
+        query = await models.Users.objects.select_related("photo_set").all(age__in=age_range)
+    else:
+        query = await models.Users.objects.select_related("photo_set").all(
+            gender=search_parameters.search_by_gender, age__in=age_range
+        )
+
+    return query
+
+
 async def get_user_by_email(email: str) -> models.Users:
     """Get user or none"""
 
     query = await models.Users.objects.get_or_none(email=email)
+    return query
+
+
+async def create_random_user_secret_key(user_id: int) -> hex:
+    """Create random user secret"""
+
+    query = secrets.token_hex()
+
+    await delete_user_secret_key(user_id)
+    await models.SecretKey.objects.create(secret_key=query, user=user_id)
+
     return query
 
 
@@ -59,6 +88,12 @@ async def get_user_token(token: str) -> models.Token:
 
     query = await models.Token.objects.select_related("user").get_or_none(token=token)
     return query
+
+
+async def delete_user_secret_key(user_id: int) -> None:
+    """Delete user token"""
+
+    await models.SecretKey.objects.delete(user=user_id)
 
 
 async def delete_user_token(user_id: int) -> None:
@@ -72,7 +107,8 @@ async def create_user_token(user_id: int) -> models.Token:
 
     await delete_user_token(user_id)
 
-    _token = jwt.encode(payload={"user_id": user_id}, key=SECRET, algorithm=ALGORITHM)
+    _secret_key = await create_random_user_secret_key(user_id=user_id)
+    _token = jwt.encode(payload={"user_id": user_id}, key=_secret_key, algorithm=ALGORITHM)
     query = await models.Token.objects.create(token=_token, user=user_id)
     return query
 

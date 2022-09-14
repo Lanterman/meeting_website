@@ -3,16 +3,12 @@ import datetime
 
 from pydantic import EmailStr
 
-from config.utils import MainMeta
-
-
-GENDER = ["Man", "Girl"]
-SEARCH_BY_GENDER = ["Man", "Girl", "Both"]
+from config.utils import MainMeta, GENDER
 
 
 class Users(ormar.Model):
     class Meta(MainMeta):
-        tablename = "user"
+        tablename = "users"
 
     id: int = ormar.Integer(primary_key=True, index=True)
     first_name: str = ormar.String(max_length=50)
@@ -29,15 +25,13 @@ class Users(ormar.Model):
     update_date: datetime.datetime = ormar.DateTime(default=datetime.datetime.now())
 
 
-class Search(ormar.Model):
+class SecretKey(ormar.Model):
     class Meta(MainMeta):
-        tablename = "search"
+        tablename = "secret_key"
 
     id: int = ormar.Integer(primary_key=True, index=True)
-    search_by_gender: str = ormar.String(max_length=4, choices=SEARCH_BY_GENDER)
-    search_by_age_to: int = ormar.Integer(default=10)
-    search_by_age_from: int = ormar.Integer(default=20)
-    user: int = ormar.ForeignKey(to=Users, ondelete="CASCADE", related_name="search")
+    secret_key: str = ormar.String(max_length=300, unique=True)
+    user: int = ormar.ForeignKey(to=Users, ondelete="CASCADE", related_name="secret_key_set")
 
 
 class Token(ormar.Model):
@@ -58,21 +52,3 @@ class Photo(ormar.Model):
     path_to_photo: str = ormar.String(max_length=100)
     date_of_creation: datetime.datetime = ormar.DateTime(default=datetime.datetime.now())
     user: int = ormar.ForeignKey(to=Users, ondelete="CASCADE", related_name="photo_set")
-
-
-class Like(ormar.Model):
-    class Meta(MainMeta):
-        tablename = "like"
-
-    id: int = ormar.Integer(primary_key=True, index=True)
-    owner: int = ormar.ForeignKey(to=Users, ondelete="CASCADE", releted_name="owner")
-    like: int = ormar.ForeignKey(to=Users, ondelete="CASCADE", related_name="like_set")
-
-
-class Favorite(ormar.Model):
-    class Meta(MainMeta):
-        tablename = "favorite"
-
-    id: int = ormar.Integer(primary_key=True, index=True)
-    owner: int = ormar.ForeignKey(to=Users, ondelete="CASCADE", releted_name="owner")
-    favorite: int = ormar.ForeignKey(to=Users, ondelete="CASCADE", related_name="favorite_set")
