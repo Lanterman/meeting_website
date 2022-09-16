@@ -9,7 +9,6 @@ from fastapi import BackgroundTasks
 
 from config.utils import PATH_TO_USER_DIRECTORIES, ALGORITHM
 from . import models, schemas
-from ..main.services import get_search_parameters
 
 
 def create_random_salt(length=12) -> str:
@@ -47,22 +46,6 @@ def remove_user_directory(user_id) -> None:
 
     if str(user_id) in os.listdir(PATH_TO_USER_DIRECTORIES):
         os.rmdir(f"{PATH_TO_USER_DIRECTORIES}/{user_id}")
-
-
-async def get_users(user_id: int) -> list[models.Users]:
-    """Get users mathing search parameters"""
-
-    search_parameters = await get_search_parameters(user_id)
-    age_range = range(search_parameters.search_by_age_to, search_parameters.search_by_age_from + 1)
-
-    if search_parameters.search_by_gender == "Both":
-        query = await models.Users.objects.select_related("photo_set").all(age__in=age_range)
-    else:
-        query = await models.Users.objects.select_related("photo_set").all(
-            gender=search_parameters.search_by_gender, age__in=age_range
-        )
-
-    return query
 
 
 async def get_user_by_email(email: str) -> models.Users:
@@ -128,6 +111,12 @@ async def create_user(form_data: schemas.CreateUser, back_task: BackgroundTasks)
     token_info = {"token": token.token, "expires": token.expires}
 
     return {**form_data.dict(), "token": token_info}
+
+
+async def update_user_infor(form_data: schemas.UpdateUserInfo):
+    """Update user information"""
+
+    print(form_data)
 
 
 async def delete_user(back_task: BackgroundTasks, user: models.Users) -> int:

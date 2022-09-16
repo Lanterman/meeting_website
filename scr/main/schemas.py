@@ -2,6 +2,7 @@ from pydantic import BaseModel, validator
 from fastapi import HTTPException, status
 
 from config.utils import SEARCH_BY_GENDER
+from scr.users import models, schemas
 
 
 class BaseSearchOptions(BaseModel):
@@ -10,6 +11,12 @@ class BaseSearchOptions(BaseModel):
     search_by_gender: str
     search_by_age_to: int
     search_by_age_from: int
+
+
+class SearchUser(schemas.BaseUser):
+    """Users mathing my search parameters"""
+
+    photo_set: list[models.Photo]
 
 
 class CreateSearch(BaseSearchOptions):

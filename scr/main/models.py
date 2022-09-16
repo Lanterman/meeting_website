@@ -40,7 +40,7 @@ class Chat(ormar.Model):
         tablename = "chat"
 
     id: int = ormar.Integer(primary_key=True, index=True)
-    users: list[Users] = ormar.ManyToMany(to=Users)
+    user: list[Users] = ormar.ManyToMany(to=Users, related_name="chat_set")
 
 
 class Message(ormar.Model):

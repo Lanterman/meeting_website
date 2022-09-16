@@ -7,16 +7,11 @@ from . import schemas, services, models
 user_router = APIRouter(prefix="/user", tags=["user"])
 
 
-@user_router.get("/", response_model=list[schemas.SearchUser])
-async def get_users_mathing_search(current_user: models.Users = Depends(get_current_user)):
-    """Get users mathing search parameters"""
+@user_router.get("/profile")
+async def profile(current_user: models.Users = Depends(get_current_user)):
+    """Authorized ser profile - endpoint"""
 
-    users = await services.get_users(current_user.id)
-
-    if current_user in users:
-        users.remove(current_user)
-
-    return users
+    return current_user.dict(exclude={"password", "token_set", "secret_key_set", "likes"})
 
 
 @user_router.post("/auth", response_model=schemas.BaseToken, status_code=status.HTTP_202_ACCEPTED)
@@ -45,6 +40,14 @@ async def create_user(form_data: schemas.CreateUser, back_task: BackgroundTasks)
         raise HTTPException(detail="User with this email already exists!", status_code=status.HTTP_400_BAD_REQUEST)
 
     return await services.create_user(form_data, back_task)
+
+
+@user_router.put("/update_info", status_code=status.HTTP_202_ACCEPTED, response_model=schemas.UpdateUserInfo)
+async def update_user_info(form_data: schemas.UpdateUserInfo, current_user: models.Users = Depends(get_current_user)):
+    """Update user information - endpoint"""
+
+    update_data = await services.update_user_infor(form_data)
+    return update_data
 
 
 @user_router.delete("/delete_user")

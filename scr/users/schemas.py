@@ -20,12 +20,6 @@ class BaseUser(BaseModel):
     description: str
 
 
-class SearchUser(BaseUser):
-    """Users mathing my search parameters"""
-
-    photo_set: list[models.Photo]
-
-
 class CreateUser(BaseUser):
     """Create user - schemas"""
 
@@ -40,6 +34,10 @@ class CreateUser(BaseUser):
                 status_code=status.HTTP_406_NOT_ACCEPTABLE,
                 detail=f"No such gender! Allowed list: {', '.join(models.GENDER)}")
         return value
+
+
+class UpdateUserInfo(CreateUser):
+    """Update user information - schema"""
 
 
 class BaseToken(BaseModel):
@@ -57,6 +55,3 @@ class UserAndHisToken(BaseUser):
     """User information and hist token schema"""
 
     token: BaseToken = {}
-
-
-
