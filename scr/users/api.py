@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status, BackgroundTasks, Depends
+from fastapi import APIRouter, HTTPException, status, BackgroundTasks, Depends, Form, UploadFile, File
 from fastapi.security import OAuth2PasswordRequestForm
 
 from config.dependecies import get_current_user
@@ -46,8 +46,33 @@ async def create_user(form_data: schemas.CreateUser, back_task: BackgroundTasks)
 async def update_user_info(form_data: schemas.UpdateUserInfo, current_user: models.Users = Depends(get_current_user)):
     """Update user information - endpoint"""
 
-    update_data = await services.update_user_infor(form_data)
+    check_user = await services.get_user_by_email(form_data.email)
+
+    if check_user and check_user != current_user:
+        raise HTTPException(detail="User with this email already exists!", status_code=status.HTTP_400_BAD_REQUEST)
+
+    update_data = await services.update_user_info(form_data, current_user)
     return update_data
+
+
+@user_router.put("/reset_password", status_code=status.HTTP_202_ACCEPTED)
+async def reset_password(form_data: schemas.ResetPassword, current_user: models.Users = Depends(get_current_user)):
+    """Reset password - endpoint"""
+
+    if not services.validate_password(form_data.old_password, current_user.password):
+        raise HTTPException(detail="Wrong old password!", status_code=status.HTTP_400_BAD_REQUEST)
+
+    await services.reset_password(form_data, current_user)
+    return {"detail": "Successful!", "user": schemas.BaseUser(**current_user.dict())}
+
+
+@user_router.post("/add_photo", status_code=status.HTTP_201_CREATED)
+async def add_photo(
+        path_to_photo: str = Form(), photo: UploadFile = File(), current_user: models.Users = Depends(get_current_user)
+):
+    """Add photo - endpoint"""
+
+    pass
 
 
 @user_router.delete("/delete_user")

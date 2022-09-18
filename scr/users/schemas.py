@@ -20,10 +20,8 @@ class BaseUser(BaseModel):
     description: str
 
 
-class CreateUser(BaseUser):
-    """Create user - schemas"""
-
-    password: str
+class UpdateUserInfo(BaseUser):
+    """Update user information - schema"""
 
     @validator("gender")
     def is_gender_allowed(cls, value):
@@ -36,8 +34,36 @@ class CreateUser(BaseUser):
         return value
 
 
-class UpdateUserInfo(CreateUser):
-    """Update user information - schema"""
+class CreateUser(UpdateUserInfo):
+    """Create user - schemas"""
+
+    password: str
+
+
+class ResetPassword(BaseModel):
+    """Reset password - schema"""
+
+    old_password: str
+    new_password: str
+    confirm_password: str
+
+    @validator("new_password")
+    def check_new_password_and_old_password_dont_match(cls, value, values):
+        """Check if old password and don't match"""
+
+        if value == values["old_password"]:
+            raise HTTPException(detail="New password can not match old one!", status_code=status.HTTP_400_BAD_REQUEST)
+
+        return value
+
+    @validator("confirm_password")
+    def check_passwords_match(cls, value, values):
+        """Check if new password and confirmation password match"""
+
+        if value != values["new_password"]:
+            raise HTTPException(detail="Passwords do not match!", status_code=status.HTTP_400_BAD_REQUEST)
+
+        return value
 
 
 class BaseToken(BaseModel):

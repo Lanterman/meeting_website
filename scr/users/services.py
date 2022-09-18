@@ -1,3 +1,4 @@
+import datetime
 import os
 import jwt
 import string
@@ -113,10 +114,19 @@ async def create_user(form_data: schemas.CreateUser, back_task: BackgroundTasks)
     return {**form_data.dict(), "token": token_info}
 
 
-async def update_user_infor(form_data: schemas.UpdateUserInfo):
+async def update_user_info(form_data: schemas.UpdateUserInfo, user: models.Users) -> models.Users:
     """Update user information"""
 
-    print(form_data)
+    updated_user = await user.update(**form_data.dict(), update_date=datetime.datetime.now())
+    return updated_user
+
+
+async def reset_password(form_data: schemas.ResetPassword, user: models.Users) -> None:
+    """Reset password"""
+
+    salt = create_random_salt()
+    hashed_password = password_hashing(form_data.new_password, salt)
+    await user.update(password=f"{salt}${hashed_password}")
 
 
 async def delete_user(back_task: BackgroundTasks, user: models.Users) -> int:

@@ -29,5 +29,4 @@ app.include_router(main_router)
 
 AUTH = ""
 
-print(" 14. users chat, that like each other")
-print("доделать обновление информации пользователя")
+print("rewrite add_photo endpoint")
