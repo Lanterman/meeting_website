@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status, BackgroundTasks, Depends, Form, UploadFile, File
+from fastapi import APIRouter, HTTPException, status, BackgroundTasks, Depends, UploadFile, File
 from fastapi.security import OAuth2PasswordRequestForm
 
 from config.dependecies import get_current_user
@@ -66,13 +66,14 @@ async def reset_password(form_data: schemas.ResetPassword, current_user: models.
     return {"detail": "Successful!", "user": schemas.BaseUser(**current_user.dict())}
 
 
-@user_router.post("/add_photo", status_code=status.HTTP_201_CREATED)
+@user_router.post("/add_photo", status_code=status.HTTP_201_CREATED, response_model=schemas.AddPhoto)
 async def add_photo(
-        path_to_photo: str = Form(), photo: UploadFile = File(), current_user: models.Users = Depends(get_current_user)
+        back_task: BackgroundTasks, photo: UploadFile = File(), current_user: models.Users = Depends(get_current_user)
 ):
     """Add photo - endpoint"""
 
-    pass
+    path_to_photo = await services.add_photo(back_task, photo, current_user)
+    return {"path_to_photo": path_to_photo, "photo": photo}
 
 
 @user_router.delete("/delete_user")

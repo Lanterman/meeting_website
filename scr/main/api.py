@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, status
+from pydantic import EmailStr
 
 from config.dependecies import get_current_user
 from . import schemas, models, services
+from scr.users import services as user_services
 
 
 main_router = APIRouter(tags=["main"])
@@ -25,3 +27,21 @@ async def set_search_parameters(form_data: schemas.CreateSearch, current_user: m
 
     search_parameters = await services.create_search_parameters(data=form_data, user_id=current_user.id)
     return search_parameters
+
+
+@main_router.get("/{user_email}/set_like", response_model=schemas.BaseLike)
+async def set_like(user_email: EmailStr, current_user: models.Users = Depends(get_current_user)):
+    """Set like for user - endpoint"""
+
+    _set_like = await services.set_like(user_email, current_user)
+    return _set_like
+
+
+@main_router.delete("/{user_email}/delete_like")
+async def delete_like(user_email: EmailStr, current_user: models.Users = Depends(get_current_user)):
+    """Delete like for user - endpoint"""
+
+    user = await user_services.get_user_by_email(user_email)
+
+    await services.delete_like(user, current_user)
+    return {"detail": "successful!"}

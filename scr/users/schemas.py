@@ -1,7 +1,7 @@
 import datetime
 
 from typing import Optional
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, UploadFile
 from pydantic import BaseModel, EmailStr, Field, validator
 
 from . import models
@@ -64,6 +64,13 @@ class ResetPassword(BaseModel):
             raise HTTPException(detail="Passwords do not match!", status_code=status.HTTP_400_BAD_REQUEST)
 
         return value
+
+
+class AddPhoto(BaseModel):
+    """Add photo - schema"""
+
+    path_to_photo: str
+    photo: UploadFile
 
 
 class BaseToken(BaseModel):

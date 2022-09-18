@@ -1,4 +1,8 @@
+from fastapi import HTTPException, status
+from pydantic import EmailStr
+
 from . import models, schemas
+from scr.users import services
 
 
 async def delete_search_parameters(user_id: int) -> None:
@@ -37,3 +41,32 @@ async def get_users(user_id: int) -> list[models.Users]:
         )
 
     return query
+
+
+async def delete_like(user: models.Users, current_user: models.Users) -> None:
+    """Delete like for user"""
+
+    if not user:
+        raise HTTPException(detail="Not found!", status_code=status.HTTP_404_NOT_FOUND)
+
+    if user == current_user:
+        raise HTTPException(detail="You can not delete like yourself!", status_code=status.HTTP_400_BAD_REQUEST)
+
+    await models.Like.objects.delete(owner=current_user, like=user)
+
+
+async def set_like(user_email: EmailStr, current_user: models.Users):
+    """Set like for user"""
+
+    user = await services.get_user_by_email(user_email)
+
+    if not user:
+        raise HTTPException(detail="Not found!", status_code=status.HTTP_404_NOT_FOUND)
+
+    if user == current_user:
+        raise HTTPException(detail="You can not set like yourself!", status_code=status.HTTP_400_BAD_REQUEST)
+
+    await delete_like(user, current_user)
+
+    like = await models.Like.objects.create(owner=current_user, like=user)
+    return like

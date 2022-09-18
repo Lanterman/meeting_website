@@ -1,3 +1,5 @@
+import datetime
+
 from pydantic import BaseModel, validator
 from fastapi import HTTPException, status
 
@@ -13,10 +15,17 @@ class BaseSearchOptions(BaseModel):
     search_by_age_from: int
 
 
+class BasePhoto(BaseModel):
+    """Base photo - schema"""
+
+    path_to_photo: str
+    date_of_creation: datetime.datetime
+
+
 class SearchUser(schemas.BaseUser):
     """Users mathing my search parameters"""
 
-    photo_set: list[models.Photo]
+    photo_set: list[BasePhoto]
 
 
 class CreateSearch(BaseSearchOptions):
@@ -31,3 +40,10 @@ class CreateSearch(BaseSearchOptions):
                 status_code=status.HTTP_406_NOT_ACCEPTABLE,
                 detail=f"No such gender! Allowed list: {', '.join(SEARCH_BY_GENDER)}")
         return value
+
+
+class BaseLike(BaseModel):
+    """Base like for user"""
+
+    owner: schemas.BaseUser
+    like: schemas.BaseUser

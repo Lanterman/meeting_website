@@ -29,4 +29,4 @@ app.include_router(main_router)
 
 AUTH = ""
 
-print("rewrite add_photo endpoint")
+print("разобрать почему back_task не работает")

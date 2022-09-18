@@ -1,14 +1,17 @@
 import datetime
 import os
+
+import aiofiles as aiofiles
 import jwt
 import string
 import secrets
 import hashlib
+import uuid
 
 from random import choice
-from fastapi import BackgroundTasks
+from fastapi import BackgroundTasks, UploadFile, HTTPException, status
 
-from config.utils import PATH_TO_USER_DIRECTORIES, ALGORITHM
+from config.utils import PATH_TO_USER_DIRECTORIES, ALGORITHM, EXTENSION_TYPES
 from . import models, schemas
 
 
@@ -127,6 +130,35 @@ async def reset_password(form_data: schemas.ResetPassword, user: models.Users) -
     salt = create_random_salt()
     hashed_password = password_hashing(form_data.new_password, salt)
     await user.update(password=f"{salt}${hashed_password}")
+
+
+async def write_photo_to_user_directory(file_name: str, file: UploadFile):
+    """Write photo to user directory"""
+
+    async with aiofiles.open(file_name, "wb") as buffer:
+        data = await file.read()
+        await buffer.write(data)
+
+
+async def add_photo(back_task: BackgroundTasks, file: UploadFile, user: models.Users) -> str:
+    """Add photo to database and write to user directory"""
+
+    content_type = file.content_type.split("/")[-1]
+    path_to_photo = f"uploaded_photo/{user.id}/{uuid.uuid4()}.{content_type}"
+
+    if file.content_type in EXTENSION_TYPES:
+        # back_task.add_task(write_photo_to_user_directory, path_to_photo, file)
+        async with aiofiles.open(path_to_photo, "wb") as buffer:
+            data = await file.read()
+            await buffer.write(data)
+    else:
+        raise HTTPException(
+            detail="Unsupported content type! Must be jpeg, bmp, png, jpg or gif!",
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
+        )
+
+    photo = await models.Photo.objects.create(path_to_photo=path_to_photo, user=user.id)
+    return photo.path_to_photo
 
 
 async def delete_user(back_task: BackgroundTasks, user: models.Users) -> int:
