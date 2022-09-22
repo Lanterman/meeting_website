@@ -40,7 +40,7 @@ class Chat(ormar.Model):
         tablename = "chat"
 
     id: int = ormar.Integer(primary_key=True, index=True)
-    user: list[Users] = ormar.ManyToMany(to=Users, related_name="chat_set")
+    users: list[Users] = ormar.ManyToMany(to=Users, related_name="chat_set")
 
 
 class Message(ormar.Model):
@@ -50,4 +50,5 @@ class Message(ormar.Model):
     id: int = ormar.Integer(primary_key=True, index=True)
     message: str = ormar.Text()
     date_of_creation: datetime.datetime = ormar.DateTime(default=datetime.datetime.now())
-    owner: int = ormar.ForeignKey(to=Users, related_name="message_set", ondelete="CASCADE")
+    chat: int = ormar.ForeignKey(to=Chat, related_name="chat_messages", ondelete="CASCADE")
+    owner: int = ormar.ForeignKey(to=Users, related_name="user_messages", ondelete="CASCADE")

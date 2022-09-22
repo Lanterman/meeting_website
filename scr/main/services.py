@@ -56,8 +56,8 @@ async def set_like(user_email: EmailStr, current_user: models.Users) -> models.L
 
     await delete_like(user, current_user)
 
-    like = await models.Like.objects.create(owner=current_user, like=user)
-    return like
+    query = await models.Like.objects.create(owner=current_user, like=user)
+    return query
 
 
 async def remove_from_favorites(user: models.Users, current_user: models.Users) -> None:
@@ -77,5 +77,43 @@ async def add_to_favorites(user_email: EmailStr, current_user: models.Users) -> 
 
     await remove_from_favorites(user, current_user)
 
-    favorite = await models.Favorite.objects.create(owner=current_user, favorite=user)
-    return favorite
+    query = await models.Favorite.objects.create(owner=current_user, favorite=user)
+    return query
+
+
+async def get_chat(chat_id: int):
+    """Get users chat"""
+
+    query = await models.Chat.objects.prefetch_related(["users", "chat_messages", "chat_messages__owner"]).get_or_none(
+        id=chat_id)
+    return query
+
+
+async def create_chat(user, current_user) -> models.Chat:
+    """Create chat with user"""
+
+    query = await models.Chat.objects.create()
+    await query.users.add(user)
+    await query.users.add(current_user)
+    return query
+
+
+async def chat(chat_id: int, user_email: EmailStr, current_user: models.Users):
+    """Chat with user"""
+
+    user = await user_services.get_user_by_email(user_email)
+    await user_validation_check(user, current_user, msg="You can not create chat with yourself!")
+    query = await get_chat(chat_id)
+
+    if not query:
+        query = await create_chat(user, current_user)
+
+    return query
+
+
+async def create_message(chat_id: int, message: str, current_user: models.Users) -> models.Message:
+    """Send message to chat"""
+
+    _chat = await get_chat(chat_id)
+    query = await models.Message.objects.create(message=message, chat=_chat, owner=current_user)
+    return query

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Form
 from pydantic import EmailStr
 
 from config.dependecies import get_current_user
@@ -65,3 +65,19 @@ async def remove_from_favorites(user_email: EmailStr, current_user: models.Users
 
     await services.remove_from_favorites(user, current_user)
     return {"detail": "Successful!"}
+
+
+@main_router.get("/chat/{chat_id}", response_model=schemas.Chat)
+async def chat(chat_id: int, user_email: EmailStr, current_user: models.Users = Depends(get_current_user)):
+    """Chat with user - endpoint"""
+
+    _chat = await services.chat(chat_id, user_email, current_user)
+    return _chat
+
+
+@main_router.post("/chat/{chat_id}/send_msg", response_model=schemas.Message, status_code=status.HTTP_201_CREATED)
+async def send_message(chat_id: int, message: str = Form(), current_user: models.Users = Depends(get_current_user)):
+    """Send message to chat - endpoint"""
+
+    message = await services.create_message(chat_id, message, current_user)
+    return message

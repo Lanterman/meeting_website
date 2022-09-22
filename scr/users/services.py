@@ -175,4 +175,3 @@ async def update_city(city: str, current_user: models.Users) -> models.Users:
 
     query = await current_user.update(city=city)
     return query
-
