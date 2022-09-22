@@ -22,10 +22,12 @@ async def get_users_mathing_search(current_user: models.Users = Depends(get_curr
 
 
 @main_router.post("/set_search", response_model=schemas.BaseSearchOptions, status_code=status.HTTP_201_CREATED)
-async def set_search_parameters(form_data: schemas.CreateSearch, current_user: models.Users = Depends(get_current_user)):
-    """Set search parameters for search users"""
+async def set_search_parameters(
+        form_data: schemas.CreateSearch, current_user: models.Users = Depends(get_current_user)
+):
+    """Create or update search parameters for search users - endpoint"""
 
-    search_parameters = await services.create_search_parameters(data=form_data, user_id=current_user.id)
+    search_parameters = await services.update_or_create_search_parameters(data=form_data, user_id=current_user.id)
     return search_parameters
 
 
@@ -45,3 +47,21 @@ async def delete_like(user_email: EmailStr, current_user: models.Users = Depends
 
     await services.delete_like(user, current_user)
     return {"detail": "successful!"}
+
+
+@main_router.get("/{user_email}/add_to_favorites", response_model=schemas.BaseFavorite)
+async def add_to_favorites(user_email: EmailStr, current_user: models.Users = Depends(get_current_user)):
+    """Add user to favorites - endpoint"""
+
+    favorites = await services.add_to_favorites(user_email, current_user)
+    return favorites
+
+
+@main_router.delete("/{user_email}/remove_from_favorites")
+async def remove_from_favorites(user_email: EmailStr, current_user: models.Users = Depends(get_current_user)):
+    """Remove from favorites - endpoint"""
+
+    user = await user_services.get_user_by_email(user_email)
+
+    await services.remove_from_favorites(user, current_user)
+    return {"detail": "Successful!"}

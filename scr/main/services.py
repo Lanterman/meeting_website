@@ -1,22 +1,18 @@
-from fastapi import HTTPException, status
 from pydantic import EmailStr
+from ormar import exceptions
 
+from config.utils import user_validation_check
 from . import models, schemas
-from scr.users import services
+from scr.users import services as user_services
 
 
-async def delete_search_parameters(user_id: int) -> None:
-    """Delete search parameters"""
-
-    await models.SearchOptions.objects.delete(user=user_id)
-
-
-async def create_search_parameters(data: schemas.CreateSearch, user_id: int):
+async def update_or_create_search_parameters(data: schemas.CreateSearch, user_id: int):
     """Create search parameters for search users"""
 
-    await delete_search_parameters(user_id)
-
-    query = await models.SearchOptions.objects.create(**data.dict(), user=user_id)
+    try:
+        query = await models.SearchOptions.objects.update_or_create(id=user_id, **data.dict(), user=user_id)
+    except exceptions.NoMatch:
+        query = await models.SearchOptions.objects.create(id=user_id, **data.dict(), user=user_id)
     return query
 
 
@@ -46,27 +42,40 @@ async def get_users(user_id: int) -> list[models.Users]:
 async def delete_like(user: models.Users, current_user: models.Users) -> None:
     """Delete like for user"""
 
-    if not user:
-        raise HTTPException(detail="Not found!", status_code=status.HTTP_404_NOT_FOUND)
-
-    if user == current_user:
-        raise HTTPException(detail="You can not delete like yourself!", status_code=status.HTTP_400_BAD_REQUEST)
+    await user_validation_check(user, current_user, msg="You can not remove likes from yourself!")
 
     await models.Like.objects.delete(owner=current_user, like=user)
 
 
-async def set_like(user_email: EmailStr, current_user: models.Users):
+async def set_like(user_email: EmailStr, current_user: models.Users) -> models.Like:
     """Set like for user"""
 
-    user = await services.get_user_by_email(user_email)
+    user = await user_services.get_user_by_email(user_email)
 
-    if not user:
-        raise HTTPException(detail="Not found!", status_code=status.HTTP_404_NOT_FOUND)
-
-    if user == current_user:
-        raise HTTPException(detail="You can not set like yourself!", status_code=status.HTTP_400_BAD_REQUEST)
+    await user_validation_check(user, current_user, msg="You can not like yourself!")
 
     await delete_like(user, current_user)
 
     like = await models.Like.objects.create(owner=current_user, like=user)
     return like
+
+
+async def remove_from_favorites(user: models.Users, current_user: models.Users) -> None:
+    """Remove from favorites"""
+
+    await user_validation_check(user, current_user, msg="You can not remove yourself from your favorites!")
+
+    await models.Favorite.objects.delete(owner=current_user, favorite=user)
+
+
+async def add_to_favorites(user_email: EmailStr, current_user: models.Users) -> models.Favorite:
+    """Add user to favorites"""
+
+    user = await user_services.get_user_by_email(user_email)
+
+    await user_validation_check(user, current_user, msg="You can not add yourself to favorites!")
+
+    await remove_from_favorites(user, current_user)
+
+    favorite = await models.Favorite.objects.create(owner=current_user, favorite=user)
+    return favorite

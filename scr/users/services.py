@@ -168,3 +168,11 @@ async def delete_user(back_task: BackgroundTasks, user: models.Users) -> int:
 
     query = await user.delete()
     return query
+
+
+async def update_city(city: str, current_user: models.Users) -> models.Users:
+    """update your city"""
+
+    query = await current_user.update(city=city)
+    return query
+

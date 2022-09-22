@@ -2,6 +2,8 @@ import ormar
 
 from pathlib import Path
 
+from fastapi import HTTPException, status
+
 from .db import metadata, database
 
 
@@ -20,4 +22,14 @@ EXTENSION_TYPES = ["image/jpeg", "image/bmp", "image/png", "image/jpg", "image/g
 class MainMeta(ormar.ModelMeta):
     metadata = metadata
     database = database
+
+
+async def user_validation_check(user, current_user, msg: str) -> None:
+    """"""
+
+    if not user:
+        raise HTTPException(detail="Not found!", status_code=status.HTTP_404_NOT_FOUND)
+
+    if user == current_user:
+        raise HTTPException(detail=msg, status_code=status.HTTP_400_BAD_REQUEST)
 

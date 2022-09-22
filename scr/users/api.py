@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status, BackgroundTasks, Depends, UploadFile, File
+from fastapi import APIRouter, HTTPException, status, BackgroundTasks, Depends, UploadFile, File, Form
 from fastapi.security import OAuth2PasswordRequestForm
 
 from config.dependecies import get_current_user
@@ -82,3 +82,11 @@ async def delete_user(back_task: BackgroundTasks, current_user: models.Users = D
 
     user = await services.delete_user(back_task=back_task, user=current_user)
     return {"detail": "Successful!", "user_id": user}
+
+
+@user_router.put("/update_city")
+async def update_city(city: str = Form(), current_user: models.Users = Depends(get_current_user)):
+    """Update your city - endpoint"""
+
+    user = await services.update_city(city, current_user)
+    return user

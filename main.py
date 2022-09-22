@@ -30,3 +30,4 @@ app.include_router(main_router)
 AUTH = ""
 
 print("разобрать почему back_task не работает")
+print("рандомный выод пользователей по запросу")

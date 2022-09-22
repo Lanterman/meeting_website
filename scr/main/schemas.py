@@ -4,7 +4,7 @@ from pydantic import BaseModel, validator
 from fastapi import HTTPException, status
 
 from config.utils import SEARCH_BY_GENDER
-from scr.users import models, schemas
+from scr.users import schemas
 
 
 class BaseSearchOptions(BaseModel):
@@ -29,7 +29,7 @@ class SearchUser(schemas.BaseUser):
 
 
 class CreateSearch(BaseSearchOptions):
-    """Create search parameters"""
+    """Create search parameters - schema"""
 
     @validator("search_by_gender")
     def is_gender_allowed(cls, value):
@@ -42,8 +42,19 @@ class CreateSearch(BaseSearchOptions):
         return value
 
 
+class UpdateSearchData(CreateSearch):
+    """Update search options - schema"""
+
+
 class BaseLike(BaseModel):
-    """Base like for user"""
+    """Base like for user - schema"""
 
     owner: schemas.BaseUser
     like: schemas.BaseUser
+
+
+class BaseFavorite(BaseModel):
+    """Base favorite for user - schema"""
+
+    owner: schemas.BaseUser
+    favorite: schemas.BaseUser

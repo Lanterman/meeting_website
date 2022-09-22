@@ -17,7 +17,7 @@ class Users(ormar.Model):
     phone: str = ormar.String(max_length=20)
     gender: str = ormar.String(max_length=4, choices=GENDER, default="Man")
     age: int = ormar.Integer(maximum=100)
-    city: str = ormar.String(max_length=20)
+    city: str = ormar.String(max_length=50)
     description: str = ormar.Text(nullable=True)
     password: str = ormar.String(max_length=500)
     is_activated: bool = ormar.Boolean(default=True)
