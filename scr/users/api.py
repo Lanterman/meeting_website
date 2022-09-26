@@ -3,15 +3,17 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from config.dependecies import get_current_user
 from . import schemas, services, models
+from ..main import services as main_services
 
 user_router = APIRouter(prefix="/user", tags=["user"])
 
 
-@user_router.get("/profile")
+@user_router.get("/profile", response_model=schemas.Profile)
 async def profile(current_user: models.Users = Depends(get_current_user)):
     """Authorized ser profile - endpoint"""
 
-    return current_user.dict(exclude={"password", "token_set", "secret_key_set", "likes"})
+    search = await main_services.get_search_parameters(current_user.id)
+    return current_user.dict() | search.dict()
 
 
 @user_router.post("/auth", response_model=schemas.BaseToken, status_code=status.HTTP_202_ACCEPTED)

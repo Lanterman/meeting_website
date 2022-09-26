@@ -13,11 +13,7 @@ main_router = APIRouter(tags=["main"])
 async def get_users_mathing_search(current_user: models.Users = Depends(get_current_user)):
     """Get users mathing search parameters"""
 
-    users = await services.get_users(current_user.id)
-
-    if current_user in users:
-        users.remove(current_user)
-
+    users = await services.get_users(current_user)
     return users
 
 

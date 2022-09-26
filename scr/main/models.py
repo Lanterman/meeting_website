@@ -22,6 +22,7 @@ class Like(ormar.Model):
         tablename = "like"
 
     id: int = ormar.Integer(primary_key=True, index=True)
+    data_of_creation: datetime.datetime = ormar.DateTime(default=datetime.datetime.now())
     owner: int = ormar.ForeignKey(to=Users, ondelete="CASCADE", releted_name="owner")
     like: int = ormar.ForeignKey(to=Users, ondelete="CASCADE", related_name="like_set")
 

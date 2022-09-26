@@ -3,6 +3,7 @@ import ormar
 from pathlib import Path
 
 from fastapi import HTTPException, status
+from pydantic import BaseModel
 
 from .db import metadata, database
 
@@ -24,6 +25,14 @@ class MainMeta(ormar.ModelMeta):
     database = database
 
 
+class BaseSearchOptions(BaseModel):
+    """Base search options"""
+
+    search_by_gender: str
+    search_by_age_to: int
+    search_by_age_from: int
+
+
 async def user_validation_check(user, current_user, msg: str) -> None:
     """"""
 
@@ -32,4 +41,3 @@ async def user_validation_check(user, current_user, msg: str) -> None:
 
     if user == current_user:
         raise HTTPException(detail=msg, status_code=status.HTTP_400_BAD_REQUEST)
-

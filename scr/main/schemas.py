@@ -3,16 +3,8 @@ import datetime
 from pydantic import BaseModel, validator
 from fastapi import HTTPException, status
 
-from config.utils import SEARCH_BY_GENDER
+from config.utils import SEARCH_BY_GENDER, BaseSearchOptions
 from scr.users import schemas
-
-
-class BaseSearchOptions(BaseModel):
-    """Base search options"""
-
-    search_by_gender: str
-    search_by_age_to: int
-    search_by_age_from: int
 
 
 class BasePhoto(BaseModel):

@@ -1,7 +1,9 @@
+import random
+
 from pydantic import EmailStr
 from ormar import exceptions
 
-from config.utils import user_validation_check
+from config.utils import user_validation_check, GENDER
 from . import models, schemas
 from scr.users import services as user_services
 
@@ -16,25 +18,26 @@ async def update_or_create_search_parameters(data: schemas.CreateSearch, user_id
     return query
 
 
-async def get_search_parameters(user_id: int) -> models.SearchOptions:
+async def get_search_parameters(user_id: int) -> models.SearchOptions or None:
     """Get search parameters"""
 
     query = await models.SearchOptions.objects.get_or_none(user=user_id)
     return query
 
 
-async def get_users(user_id: int) -> list[models.Users]:
+async def get_users(user) -> list[models.Users] or []:
     """Get users mathing search parameters"""
 
-    search_parameters = await get_search_parameters(user_id)
+    search_parameters = await get_search_parameters(user.id)
     age_range = range(search_parameters.search_by_age_to, search_parameters.search_by_age_from + 1)
+    search_gender = user.search[0].search_by_gender
+    print(search_gender)
 
-    if search_parameters.search_by_gender == "Both":
-        query = await models.Users.objects.select_related("photo_set").all(age__in=age_range)
-    else:
-        query = await models.Users.objects.select_related("photo_set").all(
-            gender=search_parameters.search_by_gender, age__in=age_range
-        )
+    query = await models.Users.objects.select_related("photo_set").exclude(id=user.id).all(
+        gender__in=[search_gender] if search_gender != "Both" else GENDER, age__in=age_range, is_activated=True
+    )
+
+    random.shuffle(query)
 
     return query
 

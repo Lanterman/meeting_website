@@ -4,6 +4,7 @@ from typing import Optional
 from fastapi import HTTPException, status, UploadFile
 from pydantic import BaseModel, EmailStr, Field, validator
 
+from config.utils import BaseSearchOptions
 from . import models
 
 
@@ -18,6 +19,15 @@ class BaseUser(BaseModel):
     age: int
     city: str
     description: str
+
+
+class Profile(BaseUser):
+    """User profile"""
+
+    is_activated: bool
+    date_of_creation: datetime.datetime
+    update_date: datetime.datetime
+    search: list[BaseSearchOptions]
 
 
 class UpdateUserInfo(BaseUser):

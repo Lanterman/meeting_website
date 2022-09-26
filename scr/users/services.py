@@ -55,7 +55,7 @@ def remove_user_directory(user_id) -> None:
 async def get_user_by_email(email: str) -> models.Users:
     """Get user or none"""
 
-    query = await models.Users.objects.get_or_none(email=email)
+    query = await models.Users.objects.get_or_none(email=email, is_activated=True)
     return query
 
 
