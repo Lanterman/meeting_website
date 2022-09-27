@@ -15,6 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 PATH_TO_USER_DIRECTORIES = f"{BASE_DIR}/uploaded_photo"
 
 GENDER = ["Man", "Girl"]
+AGE = list(range(15, 81))
 SEARCH_BY_GENDER = ["Man", "Girl", "Both"]
 
 EXTENSION_TYPES = ["image/jpeg", "image/bmp", "image/png", "image/jpg", "image/gif"]

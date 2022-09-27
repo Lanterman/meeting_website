@@ -3,7 +3,7 @@ import datetime
 
 from pydantic import EmailStr
 
-from config.utils import MainMeta, GENDER
+from config.utils import MainMeta, GENDER, AGE
 
 
 class Users(ormar.Model):
@@ -16,7 +16,7 @@ class Users(ormar.Model):
     email: EmailStr = ormar.String(max_length=50, unique=True, index=True)
     phone: str = ormar.String(max_length=20)
     gender: str = ormar.String(max_length=4, choices=GENDER, default="Man")
-    age: int = ormar.Integer(maximum=100)
+    age: int = ormar.Integer(minimum=15, maximum=80, choices=AGE)
     city: str = ormar.String(max_length=50)
     description: str = ormar.Text(nullable=True)
     password: str = ormar.String(max_length=500)

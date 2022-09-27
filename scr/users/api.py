@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, BackgroundTasks, Depends, UploadFile, File, Form
 from fastapi.security import OAuth2PasswordRequestForm
+from starlette.responses import StreamingResponse
 
 from config.dependecies import get_current_user
 from . import schemas, services, models
@@ -13,7 +14,7 @@ async def profile(current_user: models.Users = Depends(get_current_user)):
     """Authorized ser profile - endpoint"""
 
     search = await main_services.get_search_parameters(current_user.id)
-    return current_user.dict() | search.dict()
+    return current_user.dict() | {"search": search.dict()}
 
 
 @user_router.post("/auth", response_model=schemas.BaseToken, status_code=status.HTTP_202_ACCEPTED)
@@ -76,6 +77,19 @@ async def add_photo(
 
     path_to_photo = await services.add_photo(back_task, photo, current_user)
     return {"path_to_photo": path_to_photo, "photo": photo}
+
+
+@user_router.post("/show_photo/{photo_id}")
+async def show_photo(photo_id: int, current_user: models.Users = Depends(get_current_user)):
+    """Show photo - endpoint"""
+
+    photo = await services.get_photo(photo_id)
+
+    if not photo:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found!")
+
+    open_photo = open(photo.path_to_photo, "rb")
+    return StreamingResponse(open_photo)
 
 
 @user_router.delete("/delete_user")

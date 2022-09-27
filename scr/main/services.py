@@ -1,5 +1,6 @@
 import random
 
+from fastapi import HTTPException, status
 from pydantic import EmailStr
 from ormar import exceptions
 
@@ -29,9 +30,14 @@ async def get_users(user) -> list[models.Users] or []:
     """Get users mathing search parameters"""
 
     search_parameters = await get_search_parameters(user.id)
+
+    if search_parameters is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="To search for users, you must specify search parameters!"
+        )
+
     age_range = range(search_parameters.search_by_age_to, search_parameters.search_by_age_from + 1)
-    search_gender = user.search[0].search_by_gender
-    print(search_gender)
+    search_gender = search_parameters.search_by_gender
 
     query = await models.Users.objects.select_related("photo_set").exclude(id=user.id).all(
         gender__in=[search_gender] if search_gender != "Both" else GENDER, age__in=age_range, is_activated=True

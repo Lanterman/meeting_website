@@ -161,6 +161,13 @@ async def add_photo(back_task: BackgroundTasks, file: UploadFile, user: models.U
     return photo.path_to_photo
 
 
+async def get_photo(photo_id: int):
+    """Get photo"""
+
+    query = await models.Photo.objects.get_or_none(id=photo_id)
+    return query
+
+
 async def delete_user(back_task: BackgroundTasks, user: models.Users) -> int:
     """Delete user"""
 

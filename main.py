@@ -29,5 +29,5 @@ app.include_router(main_router)
 
 AUTH = ""
 
-print("доделать вывод параметров поиска в профиле и get_user service")
+print("придумать что-то со взаимными лайками")
 print("разобрать почему back_task не работает")
