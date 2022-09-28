@@ -53,3 +53,13 @@ class Message(ormar.Model):
     date_of_creation: datetime.datetime = ormar.DateTime(default=datetime.datetime.now())
     chat: int = ormar.ForeignKey(to=Chat, related_name="chat_messages", ondelete="CASCADE")
     owner: int = ormar.ForeignKey(to=Users, related_name="user_messages", ondelete="CASCADE")
+
+
+class Notification(ormar.Model):
+    class Meta(MainMeta):
+        tablename = "notification"
+
+    id: int = ormar.Integer(primary_key=True, index=True)
+    notification: str = ormar.String(max_length=150)
+    is_read: bool = ormar.Boolean(default=False)
+    users: list[Users] = ormar.ManyToMany(to=Users, related_name="notification_set")

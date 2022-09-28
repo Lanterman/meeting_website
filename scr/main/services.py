@@ -1,4 +1,5 @@
 import random
+import ormar
 
 from fastapi import HTTPException, status
 from pydantic import EmailStr
@@ -48,6 +49,27 @@ async def get_users(user) -> list[models.Users] or []:
     return query
 
 
+async def create_notification(
+        msg: str, first_user: models.Users, second_user: models.Users = None
+) -> models.Notification:
+    """Create notification"""
+
+    query = await models.Notification.objects.create(notification=msg)
+    await query.users.add(first_user)
+
+    if second_user:
+        await query.users.add(second_user)
+
+    return query
+
+
+async def get_like(owner: models.Users, like: models.Users) -> models.Like or None:
+    """Get like"""
+
+    query = await models.Like.objects.get_or_none(owner=owner, like=like)
+    return query
+
+
 async def delete_like(user: models.Users, current_user: models.Users) -> None:
     """Delete like for user"""
 
@@ -56,7 +78,24 @@ async def delete_like(user: models.Users, current_user: models.Users) -> None:
     await models.Like.objects.delete(owner=current_user, like=user)
 
 
-async def set_like(user_email: EmailStr, current_user: models.Users) -> models.Like:
+async def check_reciprocity_like(
+        receiving_user: models.Users, sending_user: models.Users
+) -> models.Notification or None:
+    """Check reciprocity like"""
+
+    notification = None
+    reciprocity_like = await get_like(owner=receiving_user, like=sending_user)
+
+    if reciprocity_like:
+        user = receiving_user.first_name.capitalize() + " " + receiving_user.last_name.capitalize()
+        notification = await create_notification(
+            msg=f"You have mutual like with {user}", first_user=sending_user, second_user=sending_user
+        )
+
+    return notification
+
+
+async def set_like(user_email: EmailStr, current_user: models.Users) -> tuple:
     """Set like for user"""
 
     user = await user_services.get_user_by_email(user_email)
@@ -65,8 +104,11 @@ async def set_like(user_email: EmailStr, current_user: models.Users) -> models.L
 
     await delete_like(user, current_user)
 
-    query = await models.Like.objects.create(owner=current_user, like=user)
-    return query
+    like = await models.Like.objects.create(owner=current_user, like=user)
+
+    notification = await check_reciprocity_like(receiving_user=user, sending_user=current_user)
+
+    return like, notification
 
 
 async def remove_from_favorites(user: models.Users, current_user: models.Users) -> None:

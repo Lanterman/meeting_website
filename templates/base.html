@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<label for="cars">Choose a car:</label>
+
+<select name="cars" id="cars">
+  <option value="volvo">Volvo</option>
+  <option value="saab">Saab</option>
+  <option value="mercedes">Mercedes</option>
+  <option value="audi">Audi</option>
+    <option value="{{test}}">{{test}}</option>
+
+</select>
+
+    <script>
+        let ws = new WebSocket(`ws://${window.location.host}/ws/notification`);
+
+        ws.onmessage = function(event) {
+            if (event.data == "Not authorization") {
+                document.getElementById("button").remove();
+            } else {
+                document.querySelector("#count_likes").innerHTML = `Count likes: ${event.data}`;
+            };
+        };
+
+        function setLike(event) {
+            let video_id = document.getElementById("video_id");
+            let current_user = document.getElementById("current_user");
+            ws.send(`${video_id.value}, ${current_user.value}`);
+            event.preventDefault();
+        };
+    </script>
+
+</body>
+</html>

@@ -31,7 +31,11 @@ async def set_search_parameters(
 async def set_like(user_email: EmailStr, current_user: models.Users = Depends(get_current_user)):
     """Set like for user - endpoint"""
 
-    _set_like = await services.set_like(user_email, current_user)
+    _set_like, notification = await services.set_like(user_email, current_user)
+
+    if notification:
+        pass
+
     return _set_like
 
 

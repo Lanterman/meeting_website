@@ -132,22 +132,13 @@ async def reset_password(form_data: schemas.ResetPassword, user: models.Users) -
     await user.update(password=f"{salt}${hashed_password}")
 
 
-async def write_photo_to_user_directory(file_name: str, file: UploadFile):
-    """Write photo to user directory"""
-
-    async with aiofiles.open(file_name, "wb") as buffer:
-        data = await file.read()
-        await buffer.write(data)
-
-
-async def add_photo(back_task: BackgroundTasks, file: UploadFile, user: models.Users) -> str:
+async def add_photo(file: UploadFile, user: models.Users) -> str:
     """Add photo to database and write to user directory"""
 
     content_type = file.content_type.split("/")[-1]
     path_to_photo = f"uploaded_photo/{user.id}/{uuid.uuid4()}.{content_type}"
 
     if file.content_type in EXTENSION_TYPES:
-        # back_task.add_task(write_photo_to_user_directory, path_to_photo, file)
         async with aiofiles.open(path_to_photo, "wb") as buffer:
             data = await file.read()
             await buffer.write(data)

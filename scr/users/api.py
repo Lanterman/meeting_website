@@ -70,16 +70,14 @@ async def reset_password(form_data: schemas.ResetPassword, current_user: models.
 
 
 @user_router.post("/add_photo", status_code=status.HTTP_201_CREATED, response_model=schemas.AddPhoto)
-async def add_photo(
-        back_task: BackgroundTasks, photo: UploadFile = File(), current_user: models.Users = Depends(get_current_user)
-):
+async def add_photo(photo: UploadFile = File(), current_user: models.Users = Depends(get_current_user)):
     """Add photo - endpoint"""
 
-    path_to_photo = await services.add_photo(back_task, photo, current_user)
+    path_to_photo = await services.add_photo(photo, current_user)
     return {"path_to_photo": path_to_photo, "photo": photo}
 
 
-@user_router.post("/show_photo/{photo_id}")
+@user_router.get("/show_photo/{photo_id}")
 async def show_photo(photo_id: int, current_user: models.Users = Depends(get_current_user)):
     """Show photo - endpoint"""
 

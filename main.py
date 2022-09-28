@@ -2,6 +2,7 @@ from fastapi import FastAPI
 
 from config.db import metadata, engine, database
 from scr.main.api import main_router
+from scr.main.websockets_api import websocket_router
 from scr.users.api import user_router
 
 app = FastAPI()
@@ -26,8 +27,10 @@ async def shutdown() -> None:
 
 app.include_router(user_router)
 app.include_router(main_router)
+app.include_router(websocket_router)
 
 AUTH = ""
 
-print("придумать что-то со взаимными лайками")
-print("разобрать почему back_task не работает")
+print("придумать что-то со взаимными лайками, выводить уведомления в websocket")
+print("Уведомления: взаимные лайки, добавил и убрал из избранных")
+print("переделать чат")

@@ -91,7 +91,7 @@ class UpdateUserInfo(BaseUser):
         value = value if value[0] == "+" else "+" + value
 
         if not value[1:]:
-            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Field can not be empty!")
+            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Phone can not be empty!")
 
         return value
 
@@ -101,7 +101,7 @@ class UpdateUserInfo(BaseUser):
 
         reg_list = re.findall("\D", value[1:])
         if reg_list or not value[1:]:
-            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Field must contain only numbers!")
+            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Phone must contain only numbers!")
 
         return value
 
