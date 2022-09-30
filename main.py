@@ -31,6 +31,7 @@ app.include_router(websocket_router)
 
 AUTH = ""
 
+print("доделать чаты, get_chat_with_email поиск чата по пользователям, schema for chat")
 print("придумать что-то со взаимными лайками, выводить уведомления в websocket")
 print("Уведомления: взаимные лайки, добавил и убрал из избранных")
-print("переделать чат")
+print("переделать чат: path attr replace to query attr - two user emails")

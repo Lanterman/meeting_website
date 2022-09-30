@@ -52,10 +52,17 @@ def remove_user_directory(user_id) -> None:
         os.rmdir(f"{PATH_TO_USER_DIRECTORIES}/{user_id}")
 
 
-async def get_user_by_email(email: str) -> models.Users:
+async def get_user_by_email(email: str) -> models.Users or None:
     """Get user or none"""
 
     query = await models.Users.objects.get_or_none(email=email, is_activated=True)
+    return query
+
+
+async def get_user_by_id(user_id: int) -> models.Users or None:
+    """Get user by id"""
+
+    query = await models.Users.objects.get_or_none(id=user_id)
     return query
 
 
@@ -70,7 +77,7 @@ async def create_random_user_secret_key(user_id: int) -> hex:
     return query
 
 
-async def get_user_token(token: str) -> models.Token:
+async def get_user_token(token: str) -> models.Token or None:
     """Get user token"""
 
     query = await models.Token.objects.select_related("user").get_or_none(token=token)

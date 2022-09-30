@@ -9,9 +9,9 @@ from ..main import services as main_services
 user_router = APIRouter(prefix="/user", tags=["user"])
 
 
-@user_router.get("/profile", response_model=schemas.Profile)
+@user_router.get("/profile", response_model=schemas.OutputProfile)
 async def profile(current_user: models.Users = Depends(get_current_user)):
-    """Authorized ser profile - endpoint"""
+    """Authorized ser profile - response endpoint"""
 
     search = await main_services.get_search_parameters(current_user.id)
     return current_user.dict() | {"search": search.dict()}

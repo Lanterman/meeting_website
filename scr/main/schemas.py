@@ -3,8 +3,8 @@ import datetime
 from pydantic import BaseModel, validator
 from fastapi import HTTPException, status
 
-from config.utils import SEARCH_BY_GENDER, BaseSearchOptions
-from scr.users import schemas
+from config import utils
+from scr.users import schemas as user_schemas
 
 
 class BasePhoto(BaseModel):
@@ -14,23 +14,23 @@ class BasePhoto(BaseModel):
     date_of_creation: datetime.datetime
 
 
-class SearchUser(schemas.BaseUser):
-    """Users mathing my search parameters"""
+class UserWithPhoto(user_schemas.BaseUser):
+    """User with photo - schema"""
 
     photo_set: list[BasePhoto]
 
 
-class CreateSearch(BaseSearchOptions):
+class CreateSearch(utils.BaseSearchOptions):
     """Create search parameters - schema"""
 
     @validator("search_by_gender")
     def is_gender_allowed(cls, value):
         """Check if gender is allowed"""
 
-        if value not in SEARCH_BY_GENDER:
+        if value not in utils.SEARCH_BY_GENDER:
             raise HTTPException(
                 status_code=status.HTTP_406_NOT_ACCEPTABLE,
-                detail=f"No such gender! Allowed list: {', '.join(SEARCH_BY_GENDER)}")
+                detail=f"No such gender! Allowed list: {', '.join(utils.SEARCH_BY_GENDER)}")
         return value
 
     @validator("search_by_age_to")
@@ -68,15 +68,15 @@ class UpdateSearchData(CreateSearch):
 class BaseLike(BaseModel):
     """Base like for user - schema"""
 
-    owner: schemas.BaseUser
-    like: schemas.BaseUser
+    owner: user_schemas.BaseUser
+    like: user_schemas.BaseUser
 
 
 class BaseFavorite(BaseModel):
     """Base favorite for user - schema"""
 
-    owner: schemas.BaseUser
-    favorite: schemas.BaseUser
+    owner: user_schemas.BaseUser
+    favorite: user_schemas.BaseUser
 
 
 class Message(BaseModel):
@@ -84,11 +84,26 @@ class Message(BaseModel):
 
     message: str
     date_of_creation: datetime.datetime
-    owner: schemas.BaseUser
+    owner: user_schemas.BaseUser
 
 
 class Chat(BaseModel):
     """Chat with user - schema"""
 
-    users: list[schemas.BaseUser]
+    users: list[user_schemas.BaseUser]
     chat_messages: list[Message]
+
+
+class SearchUser(BaseModel):
+    """Users mathing my search parameters - schema"""
+
+    current_user: user_schemas.BaseUser
+    found_users: list[UserWithPhoto]
+
+
+class OutputSearchUser(utils.Notification, SearchUser):
+    """Users mathing my search parameters - response schema"""
+
+
+class OutputChat(utils.Notification, Chat):
+    """Output user chat - response schema"""

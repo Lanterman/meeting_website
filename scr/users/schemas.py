@@ -6,11 +6,11 @@ from typing import Optional
 from fastapi import HTTPException, status, UploadFile
 from pydantic import BaseModel, EmailStr, Field, validator
 
-from config.utils import BaseSearchOptions, GENDER, AGE
+from config import utils
 
 
 class BaseUser(BaseModel):
-    """Base User schema"""
+    """Base User - schema"""
 
     first_name: str
     last_name: str
@@ -22,17 +22,8 @@ class BaseUser(BaseModel):
     description: str
 
 
-class Profile(BaseUser):
-    """User profile"""
-
-    is_activated: bool
-    date_of_creation: datetime.datetime
-    update_date: datetime.datetime
-    search: BaseSearchOptions
-
-
 class UpdateUserInfo(BaseUser):
-    """Update user information - schema"""
+    """Update user information - output schema"""
 
     @classmethod
     def check_first_character(cls, value) -> bool:
@@ -109,24 +100,24 @@ class UpdateUserInfo(BaseUser):
     def is_gender_allowed(cls, value):
         """Check if gender is allowed"""
 
-        if value not in GENDER:
+        if value not in utils.GENDER:
             raise HTTPException(
                 status_code=status.HTTP_406_NOT_ACCEPTABLE,
-                detail=f"No such gender! Allowed list: {', '.join(GENDER)}")
+                detail=f"No such gender! Allowed list: {', '.join(utils.GENDER)}")
         return value
 
     @validator("age")
     def check_age(cls, value):
         """Check if age is more than 15 and less than 80"""
 
-        if value not in AGE:
+        if value not in utils.AGE:
             raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Age must be over 15 and under 80!")
 
         return value
 
 
 class CreateUser(UpdateUserInfo):
-    """Create user - schemas"""
+    """Create user - output schema"""
 
     password: str
 
@@ -173,14 +164,14 @@ class ResetPassword(BaseModel):
 
 
 class AddPhoto(BaseModel):
-    """Add photo - schema"""
+    """Add photo - output schema"""
 
     path_to_photo: str
     photo: UploadFile
 
 
 class BaseToken(BaseModel):
-    """Base token schema"""
+    """Base token - output schema"""
 
     token: str = Field(..., alias="access_token")
     expires: datetime.datetime
@@ -191,6 +182,15 @@ class BaseToken(BaseModel):
 
 
 class UserAndHisToken(BaseUser):
-    """User information and hist token schema"""
+    """User information and hist token - output schema"""
 
     token: BaseToken = {}
+
+
+class OutputProfile(utils.Notification, BaseUser):
+    """Output profile - response schema"""
+
+    is_activated: bool
+    date_of_creation: datetime.datetime
+    update_date: datetime.datetime
+    search: utils.BaseSearchOptions

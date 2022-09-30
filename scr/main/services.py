@@ -24,6 +24,12 @@ async def get_search_parameters(user_id: int) -> models.SearchOptions or None:
     """Get search parameters"""
 
     query = await models.SearchOptions.objects.get_or_none(user=user_id)
+
+    if query is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="To search for users, you must specify search parameters!"
+        )
+
     return query
 
 
@@ -32,16 +38,12 @@ async def get_users(user) -> list[models.Users] or []:
 
     search_parameters = await get_search_parameters(user.id)
 
-    if search_parameters is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="To search for users, you must specify search parameters!"
-        )
-
-    age_range = range(search_parameters.search_by_age_to, search_parameters.search_by_age_from + 1)
     search_gender = search_parameters.search_by_gender
 
     query = await models.Users.objects.select_related("photo_set").exclude(id=user.id).all(
-        gender__in=[search_gender] if search_gender != "Both" else GENDER, age__in=age_range, is_activated=True
+        ormar.and_(age__gt=search_parameters.search_by_age_to, age__lt=search_parameters.search_by_age_from + 1),
+        gender__in=[search_gender] if search_gender != "Both" else GENDER,
+        is_activated=True
     )
 
     random.shuffle(query)
@@ -60,6 +62,13 @@ async def create_notification(
     if second_user:
         await query.users.add(second_user)
 
+    return query
+
+
+async def get_unread_user_notifications(user_id: int) -> list[models.Notification] or []:
+    """Get unread user notifications"""
+
+    query = await models.Notification.objects.all(users__id=user_id, is_read=False)
     return query
 
 
@@ -132,32 +141,48 @@ async def add_to_favorites(user_email: EmailStr, current_user: models.Users) -> 
     return query
 
 
-async def get_chat(chat_id: int):
-    """Get users chat"""
+async def get_chat_by_id(chat_id: int) -> models.Chat or None:
+    """Get chat by chat id"""
 
     query = await models.Chat.objects.prefetch_related(["users", "chat_messages", "chat_messages__owner"]).get_or_none(
         id=chat_id)
     return query
 
 
-async def create_chat(user, current_user) -> models.Chat:
-    """Create chat with user"""
+async def get_chat_with_email(user_id: int, current_user) -> models.Chat or None:
+    """Get users chat with id and email"""
 
-    query = await models.Chat.objects.create()
-    await query.users.add(user)
-    await query.users.add(current_user)
+    query = await models.Chat.objects.select_related("users").filter().all()
+    print(query)
     return query
 
 
-async def chat(chat_id: int, user_email: EmailStr, current_user: models.Users):
-    """Chat with user"""
+async def create_chat(user_id: int, current_user: models.Users) -> int:
+    """Create chat with user"""
 
-    user = await user_services.get_user_by_email(user_email)
+    user = await user_services.get_user_by_id(user_id)
     await user_validation_check(user, current_user, msg="You can not create chat with yourself!")
-    query = await get_chat(chat_id)
+
+    query = await get_chat_with_email(user_id, current_user)
 
     if not query:
-        query = await create_chat(user, current_user)
+        query = await models.Chat.objects.create()
+        await query.users.add(user)
+        await query.users.add(current_user)
+
+    return query.id
+
+
+async def chat(chat_id: int, current_user: models.Users) -> models.Chat:
+    """Chat with user"""
+
+    query = await get_chat_by_id(chat_id)
+
+    if not query:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found!")
+
+    if current_user not in query.users:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden!")
 
     return query
 

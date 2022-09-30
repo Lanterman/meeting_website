@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, status, Form
+from fastapi.responses import RedirectResponse
 from pydantic import EmailStr
 
+from config import utils
 from config.dependecies import get_current_user
 from . import schemas, models, services
 from scr.users import services as user_services
@@ -9,15 +11,15 @@ from scr.users import services as user_services
 main_router = APIRouter(tags=["main"])
 
 
-@main_router.get("/search", response_model=list[schemas.SearchUser])
+@main_router.get("/search", response_model=schemas.OutputSearchUser)
 async def get_users_mathing_search(current_user: models.Users = Depends(get_current_user)):
-    """Get users mathing search parameters"""
+    """Get users mathing search parameters - response endpoint"""
 
     users = await services.get_users(current_user)
-    return users
+    return {"current_user": current_user.dict(), "found_users": users, "notification_set": current_user.notification_set}
 
 
-@main_router.post("/set_search", response_model=schemas.BaseSearchOptions, status_code=status.HTTP_201_CREATED)
+@main_router.post("/set_search", response_model=utils.BaseSearchOptions, status_code=status.HTTP_201_CREATED)
 async def set_search_parameters(
         form_data: schemas.CreateSearch, current_user: models.Users = Depends(get_current_user)
 ):
@@ -67,12 +69,21 @@ async def remove_from_favorites(user_email: EmailStr, current_user: models.Users
     return {"detail": "Successful!"}
 
 
-@main_router.get("/chat/{chat_id}", response_model=schemas.Chat)
-async def chat(chat_id: int, user_email: EmailStr, current_user: models.Users = Depends(get_current_user)):
-    """Chat with user - endpoint"""
+@main_router.get("/chat/{chat_id}", response_model=schemas.OutputChat)
+async def chat(chat_id: int, current_user: models.Users = Depends(get_current_user)):
+    """Chat with user - response endpoint"""
 
-    _chat = await services.chat(chat_id, user_email, current_user)
-    return _chat
+    _chat = await services.chat(chat_id, current_user)
+
+    return _chat.dict() | current_user.dict()
+
+
+@main_router.get("/chat/{user_id}/create_chat")
+async def create_chat(user_id: int, current_user: models.Users = Depends(get_current_user)):
+    """Create chat and redirect to chat - endpoint"""
+
+    chat_id = await services.create_chat(user_id, current_user)
+    return RedirectResponse(url=f"{utils.DOMEN}/chat/{chat_id}/")
 
 
 @main_router.post("/chat/{chat_id}/send_msg", response_model=schemas.Message, status_code=status.HTTP_201_CREATED)
