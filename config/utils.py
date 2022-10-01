@@ -29,7 +29,7 @@ class MainMeta(ormar.ModelMeta):
 
 
 class BaseSearchOptions(BaseModel):
-    """Base search options"""
+    """Base search options - output schema"""
 
     search_by_gender: str
     search_by_age_to: int

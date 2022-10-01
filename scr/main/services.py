@@ -2,7 +2,6 @@ import random
 import ormar
 
 from fastapi import HTTPException, status
-from pydantic import EmailStr
 from ormar import exceptions
 
 from config.utils import user_validation_check, GENDER
@@ -10,7 +9,14 @@ from . import models, schemas
 from scr.users import services as user_services
 
 
-async def update_or_create_search_parameters(data: schemas.CreateSearch, user_id: int):
+def full_name(user: models.Users) -> str:
+    """Create user full name"""
+
+    query = user.first_name.capitalize() + " " + user.last_name.capitalize()
+    return query
+
+
+async def update_or_create_search_parameters(data: schemas.CreateSearch, user_id: int) -> models.SearchOptions:
     """Create search parameters for search users"""
 
     try:
@@ -96,18 +102,19 @@ async def check_reciprocity_like(
     reciprocity_like = await get_like(owner=receiving_user, like=sending_user)
 
     if reciprocity_like:
-        user = receiving_user.first_name.capitalize() + " " + receiving_user.last_name.capitalize()
         notification = await create_notification(
-            msg=f"You have mutual like with {user}", first_user=sending_user, second_user=sending_user
+            msg=f"You have mutual like with {full_name(receiving_user)}",
+            first_user=sending_user,
+            second_user=sending_user
         )
 
     return notification
 
 
-async def set_like(user_email: EmailStr, current_user: models.Users) -> tuple:
+async def set_like(user_id: int, current_user: models.Users) -> tuple:
     """Set like for user"""
 
-    user = await user_services.get_user_by_email(user_email)
+    user = await user_services.get_user_by_id(user_id)
 
     await user_validation_check(user, current_user, msg="You can not like yourself!")
 
@@ -128,17 +135,26 @@ async def remove_from_favorites(user: models.Users, current_user: models.Users) 
     await models.Favorite.objects.delete(owner=current_user, favorite=user)
 
 
-async def add_to_favorites(user_email: EmailStr, current_user: models.Users) -> models.Favorite:
+async def get_favorites(current_user: models.Users) -> list[models.Favorite] or []:
+    """Get users favorites"""
+
+    query = await models.Favorite.objects.select_related("favorite").all(owner=current_user)
+    return query
+
+
+async def add_to_favorites(user_id: int, current_user: models.Users) -> tuple:
     """Add user to favorites"""
 
-    user = await user_services.get_user_by_email(user_email)
+    user = await user_services.get_user_by_id(user_id)
 
     await user_validation_check(user, current_user, msg="You can not add yourself to favorites!")
 
     await remove_from_favorites(user, current_user)
 
+    notification = await create_notification(msg=f"{full_name(current_user)} add you to favorites!", first_user=user)
+
     query = await models.Favorite.objects.create(owner=current_user, favorite=user)
-    return query
+    return query, notification
 
 
 async def get_chat_by_id(chat_id: int) -> models.Chat or None:
@@ -149,11 +165,18 @@ async def get_chat_by_id(chat_id: int) -> models.Chat or None:
     return query
 
 
-async def get_chat_with_email(user_id: int, current_user) -> models.Chat or None:
+async def get_chat_id(user_id: int, current_user_id: int) -> int or None:
     """Get users chat with id and email"""
 
-    query = await models.Chat.objects.select_related("users").filter().all()
-    print(query)
+    # query = await models.Chat.objects.select_related("users").get_or_none(
+    #     ormar.and_(users__id=user_id), ormar.and_(users__id=current_user.id)
+    # )
+
+    query_1 = await models.Chat.objects.prefetch_related("users").all(ormar.and_(users__id=current_user_id))
+    query_2 = await models.Chat.objects.prefetch_related("users").all(ormar.and_(users__id=user_id))
+    _set_list = [_chat for _chat in query_1] + [_chat for _chat in query_2]
+    query = [_chat for _chat in _set_list if _set_list.count(_chat) == 2]
+
     return query
 
 
@@ -163,12 +186,14 @@ async def create_chat(user_id: int, current_user: models.Users) -> int:
     user = await user_services.get_user_by_id(user_id)
     await user_validation_check(user, current_user, msg="You can not create chat with yourself!")
 
-    query = await get_chat_with_email(user_id, current_user)
+    query = await get_chat_id(user_id, current_user.id)
 
     if not query:
         query = await models.Chat.objects.create()
         await query.users.add(user)
         await query.users.add(current_user)
+    else:
+        query = query[0]
 
     return query.id
 
@@ -190,6 +215,6 @@ async def chat(chat_id: int, current_user: models.Users) -> models.Chat:
 async def create_message(chat_id: int, message: str, current_user: models.Users) -> models.Message:
     """Send message to chat"""
 
-    _chat = await get_chat(chat_id)
+    _chat = await get_chat_by_id(chat_id)
     query = await models.Message.objects.create(message=message, chat=_chat, owner=current_user)
     return query

@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, status, Form
 from fastapi.responses import RedirectResponse
-from pydantic import EmailStr
 
 from config import utils
 from config.dependecies import get_current_user
@@ -16,7 +15,7 @@ async def get_users_mathing_search(current_user: models.Users = Depends(get_curr
     """Get users mathing search parameters - response endpoint"""
 
     users = await services.get_users(current_user)
-    return {"current_user": current_user.dict(), "found_users": users, "notification_set": current_user.notification_set}
+    return {"current_user": current_user, "found_users": users, "notification_set": current_user.notification_set}
 
 
 @main_router.post("/set_search", response_model=utils.BaseSearchOptions, status_code=status.HTTP_201_CREATED)
@@ -29,11 +28,11 @@ async def set_search_parameters(
     return search_parameters
 
 
-@main_router.get("/{user_email}/set_like", response_model=schemas.BaseLike)
-async def set_like(user_email: EmailStr, current_user: models.Users = Depends(get_current_user)):
+@main_router.get("/{user_id}/set_like", response_model=schemas.BaseLike)
+async def set_like(user_id: int, current_user: models.Users = Depends(get_current_user)):
     """Set like for user - endpoint"""
 
-    _set_like, notification = await services.set_like(user_email, current_user)
+    _set_like, notification = await services.set_like(user_id, current_user)
 
     if notification:
         pass
@@ -41,29 +40,41 @@ async def set_like(user_email: EmailStr, current_user: models.Users = Depends(ge
     return _set_like
 
 
-@main_router.delete("/{user_email}/delete_like")
-async def delete_like(user_email: EmailStr, current_user: models.Users = Depends(get_current_user)):
+@main_router.delete("/{user_id}/delete_like")
+async def delete_like(user_id: int, current_user: models.Users = Depends(get_current_user)):
     """Delete like for user - endpoint"""
 
-    user = await user_services.get_user_by_email(user_email)
+    user = await user_services.get_user_by_id(user_id)
 
     await services.delete_like(user, current_user)
     return {"detail": "successful!"}
 
 
-@main_router.get("/{user_email}/add_to_favorites", response_model=schemas.BaseFavorite)
-async def add_to_favorites(user_email: EmailStr, current_user: models.Users = Depends(get_current_user)):
+@main_router.get("/favorites", response_model=schemas.OutputFavorite)
+async def get_favorites(current_user: models.Users = Depends(get_current_user)):
+    """Get user favorites - response endpoint"""
+
+    favorites = await services.get_favorites(current_user)
+    return {"current_user": current_user, "favorites": favorites, "notification_set": current_user.notification_set}
+
+
+@main_router.get("/{user_id}/add_to_favorites", response_model=schemas.BaseFavorite)
+async def add_to_favorites(user_id: int, current_user: models.Users = Depends(get_current_user)):
     """Add user to favorites - endpoint"""
 
-    favorites = await services.add_to_favorites(user_email, current_user)
+    favorites, notifications = await services.add_to_favorites(user_id, current_user)
+
+    if notifications:
+        pass
+
     return favorites
 
 
-@main_router.delete("/{user_email}/remove_from_favorites")
-async def remove_from_favorites(user_email: EmailStr, current_user: models.Users = Depends(get_current_user)):
+@main_router.delete("/{user_id}/remove_from_favorites")
+async def remove_from_favorites(user_id: int, current_user: models.Users = Depends(get_current_user)):
     """Remove from favorites - endpoint"""
 
-    user = await user_services.get_user_by_email(user_email)
+    user = await user_services.get_user_by_id(user_id)
 
     await services.remove_from_favorites(user, current_user)
     return {"detail": "Successful!"}

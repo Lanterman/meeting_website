@@ -62,7 +62,7 @@ async def get_user_by_email(email: str) -> models.Users or None:
 async def get_user_by_id(user_id: int) -> models.Users or None:
     """Get user by id"""
 
-    query = await models.Users.objects.get_or_none(id=user_id)
+    query = await models.Users.objects.get_or_none(id=user_id, is_activated=True)
     return query
 
 

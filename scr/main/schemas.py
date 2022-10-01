@@ -66,21 +66,20 @@ class UpdateSearchData(CreateSearch):
 
 
 class BaseLike(BaseModel):
-    """Base like for user - schema"""
+    """Base like for user - output schema"""
 
     owner: user_schemas.BaseUser
     like: user_schemas.BaseUser
 
 
 class BaseFavorite(BaseModel):
-    """Base favorite for user - schema"""
+    """Base favorite for user - output schema"""
 
-    owner: user_schemas.BaseUser
     favorite: user_schemas.BaseUser
 
 
 class Message(BaseModel):
-    """User message - schema"""
+    """User message - output schema"""
 
     message: str
     date_of_creation: datetime.datetime
@@ -101,8 +100,19 @@ class SearchUser(BaseModel):
     found_users: list[UserWithPhoto]
 
 
+class FavoritesList(BaseModel):
+    """Users mathing my search parameters - schema"""
+
+    current_user: user_schemas.BaseUser
+    favorites: list[BaseFavorite]
+
+
 class OutputSearchUser(utils.Notification, SearchUser):
     """Users mathing my search parameters - response schema"""
+
+
+class OutputFavorite(utils.Notification, FavoritesList):
+    """User favorites - response schema"""
 
 
 class OutputChat(utils.Notification, Chat):
