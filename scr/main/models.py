@@ -62,4 +62,4 @@ class Notification(ormar.Model):
     id: int = ormar.Integer(primary_key=True, index=True)
     notification: str = ormar.String(max_length=150)
     is_read: bool = ormar.Boolean(default=False)
-    users: list[Users] = ormar.ManyToMany(to=Users, related_name="notification_set")
+    user: int = ormar.ForeignKey(to=Users, ondelete="CASCADE", related_name="notification_set")

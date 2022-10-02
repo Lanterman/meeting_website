@@ -12,7 +12,21 @@ from scr.users import services as user_services
 def full_name(user: models.Users) -> str:
     """Create user full name"""
 
-    query = user.first_name.capitalize() + " " + user.last_name.capitalize()
+    query = user.first_name + " " + user.last_name
+    return query
+
+
+async def read_notification(notif_id: int) -> None:
+    """Read user notification"""
+
+    query = await models.Notification.objects.get(id=notif_id)
+    await query.update(is_read=True)
+
+
+async def search_users_by_city(city: str, user_id: int) -> list[models.Users] or []:
+    """Search user by username"""
+
+    query = await models.Users.objects.exclude(id=user_id).all(city=city.capitalize(), is_activated=True)
     return query
 
 
@@ -47,7 +61,7 @@ async def get_users(user) -> list[models.Users] or []:
     search_gender = search_parameters.search_by_gender
 
     query = await models.Users.objects.select_related("photo_set").exclude(id=user.id).all(
-        ormar.and_(age__gt=search_parameters.search_by_age_to, age__lt=search_parameters.search_by_age_from + 1),
+        ormar.and_(age__gte=search_parameters.search_by_age_to, age__lte=search_parameters.search_by_age_from),
         gender__in=[search_gender] if search_gender != "Both" else GENDER,
         is_activated=True
     )
@@ -62,19 +76,23 @@ async def create_notification(
 ) -> models.Notification:
     """Create notification"""
 
-    query = await models.Notification.objects.create(notification=msg)
-    await query.users.add(first_user)
-
     if second_user:
-        await query.users.add(second_user)
+        query = await models.Notification.objects.bulk_create(
+            [
+                models.Notification(notification=msg + full_name(second_user), user=first_user),
+                models.Notification(notification=msg + full_name(first_user), user=second_user)
+            ]
+        )
+    else:
+        query = await models.Notification.objects.create(notification=msg, user=first_user)
 
-    return query
+    return query or second_user
 
 
 async def get_unread_user_notifications(user_id: int) -> list[models.Notification] or []:
     """Get unread user notifications"""
 
-    query = await models.Notification.objects.all(users__id=user_id, is_read=False)
+    query = await models.Notification.objects.all(user__id=user_id, is_read=False)
     return query
 
 
@@ -103,9 +121,9 @@ async def check_reciprocity_like(
 
     if reciprocity_like:
         notification = await create_notification(
-            msg=f"You have mutual like with {full_name(receiving_user)}",
+            msg="You have mutual like with ",
             first_user=sending_user,
-            second_user=sending_user
+            second_user=receiving_user
         )
 
     return notification
@@ -216,5 +234,9 @@ async def create_message(chat_id: int, message: str, current_user: models.Users)
     """Send message to chat"""
 
     _chat = await get_chat_by_id(chat_id)
+
+    if not _chat:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No such chat!")
+
     query = await models.Message.objects.create(message=message, chat=_chat, owner=current_user)
     return query

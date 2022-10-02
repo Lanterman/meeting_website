@@ -80,7 +80,9 @@ async def create_random_user_secret_key(user_id: int) -> hex:
 async def get_user_token(token: str) -> models.Token or None:
     """Get user token"""
 
-    query = await models.Token.objects.select_related("user").get_or_none(token=token)
+    query = await models.Token.objects.select_related("user").get_or_none(
+        token=token, expires__gt=datetime.datetime.now()
+    )
     return query
 
 
@@ -180,3 +182,30 @@ async def update_city(city: str, current_user: models.Users) -> models.Users:
 
     query = await current_user.update(city=city)
     return query
+
+
+async def create_google_user(back_task: BackgroundTasks, first_name: str, last_name: str, email: str) -> int:
+    """Create user with Google"""
+
+    google_user = await models.Users.objects.get_or_none(email=email)
+
+    if not google_user:
+        hashed_password = password_hashing(password=create_random_salt(15))
+        user_info = {
+            "first_name": first_name, "last_name": last_name, "email": email, "phone": "1111111111", "gender": "Man",
+            "age": 15, "city": "not specified", "description": "not specified", "password": hashed_password,
+            "is_activated": True
+        }
+        google_user = await models.Users.objects.create(**user_info)
+
+        back_task.add_task(create_user_directory, google_user.id)
+
+    return google_user.id
+
+
+async def google_auth(back_task: BackgroundTasks, first_name: str, last_name: str, email: str) -> models.Token:
+    """Google authenticated"""
+
+    google_user_id = await create_google_user(back_task, first_name, last_name, email)
+    token = await create_user_token(google_user_id)
+    return token

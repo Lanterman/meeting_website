@@ -46,17 +46,36 @@ class UpdateUserInfo(BaseUser):
 
         return field
 
+    @classmethod
+    def capitalized_field(cls, field: str) -> str:
+        """Write capitalized the field"""
+
+        value = field.capitalize()
+        return value
+
     @validator("first_name")
     def check_first_character_of_first_name(cls, value):
         """Check first character of first name"""
 
         return UpdateUserInfo.check_field(value, "First name")
 
+    @validator("first_name")
+    def capitalized_first_name(cls, value):
+        """Write capitalized the first name"""
+
+        return UpdateUserInfo.capitalized_field(value)
+
     @validator("last_name")
     def check_first_character_of_last_name(cls, value):
         """Check first character of last name"""
 
         return UpdateUserInfo.check_field(value, "Last name")
+
+    @validator("last_name")
+    def capitalized_last_name(cls, value):
+        """Write capitalized the last name"""
+
+        return UpdateUserInfo.capitalized_field(value)
 
     @validator("email")
     def check_first_character_of_email(cls, value):
@@ -114,6 +133,12 @@ class UpdateUserInfo(BaseUser):
             raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Age must be over 15 and under 80!")
 
         return value
+
+    @validator("city")
+    def capitalized_city(cls, value):
+        """Write capitalized the city"""
+
+        return UpdateUserInfo.capitalized_field(value)
 
 
 class CreateUser(UpdateUserInfo):

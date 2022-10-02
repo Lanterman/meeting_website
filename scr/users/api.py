@@ -102,5 +102,5 @@ async def delete_user(back_task: BackgroundTasks, current_user: models.Users = D
 async def update_city(city: str = Form(), current_user: models.Users = Depends(get_current_user)):
     """Update your city - endpoint"""
 
-    user = await services.update_city(city, current_user)
-    return user
+    await services.update_city(city, current_user)
+    return {"detail": "Successful!", "new_city": city}

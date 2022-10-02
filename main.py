@@ -4,6 +4,7 @@ from config.db import metadata, engine, database
 from scr.main.api import main_router
 from scr.main.websockets_api import websocket_router
 from scr.users.api import user_router
+from scr.users.auth import auth_router
 
 app = FastAPI()
 
@@ -26,9 +27,11 @@ async def shutdown() -> None:
 
 
 app.include_router(user_router)
+app .include_router(auth_router)
 app.include_router(main_router)
 app.include_router(websocket_router)
 
 AUTH = ""
 
 print("Уведомления в websocket: взаимные лайки, добавил в избранное")
+print("create websocket(logic work with db in endpoints, logic work with real time in consumer")

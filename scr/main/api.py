@@ -10,6 +10,30 @@ from scr.users import services as user_services
 main_router = APIRouter(tags=["main"])
 
 
+@main_router.get("/{notification_id}/read_notification")
+async def read_notification(notification_id: int, current_user: models.Users = Depends(get_current_user)):
+    """Read user notification"""
+
+    await services.read_notification(notification_id)
+    return {"detail": "notification is read!"}
+
+
+@main_router.get("/unread_notifications", response_model=list[utils.BaseNotification])
+async def get_unread_notifications(current_user: models.Users = Depends(get_current_user)):
+    """Get user unread notifications"""
+
+    notifications = await services.get_unread_user_notifications(current_user.id)
+    return notifications
+
+
+@main_router.post("/search_by_city", response_model=list[schemas.UserWithPhoto], status_code=status.HTTP_201_CREATED)
+async def search_users_by_city(city: str = Form(), current_user: models.Users = Depends(get_current_user)):
+    """Search user by city - endpoint"""
+
+    users = await services.search_users_by_city(city, current_user.id)
+    return users
+
+
 @main_router.get("/search", response_model=schemas.OutputSearchUser)
 async def get_users_mathing_search(current_user: models.Users = Depends(get_current_user)):
     """Get users mathing search parameters - response endpoint"""
@@ -35,7 +59,7 @@ async def set_like(user_id: int, current_user: models.Users = Depends(get_curren
     _set_like, notification = await services.set_like(user_id, current_user)
 
     if notification:
-        pass
+        print(notification)
 
     return _set_like
 
@@ -94,7 +118,7 @@ async def create_chat(user_id: int, current_user: models.Users = Depends(get_cur
     """Create chat and redirect to chat - endpoint"""
 
     chat_id = await services.create_chat(user_id, current_user)
-    return RedirectResponse(url=f"{utils.DOMEN}/chat/{chat_id}/")
+    return RedirectResponse(url=f"{utils.DOMAIN}/chat/{chat_id}/")
 
 
 @main_router.post("/chat/{chat_id}/send_msg", response_model=schemas.Message, status_code=status.HTTP_201_CREATED)
