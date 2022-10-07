@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from starlette.staticfiles import StaticFiles
 
 from config.db import metadata, engine, database
 from scr.main.api import main_router
@@ -26,6 +27,7 @@ async def shutdown() -> None:
         await database_.disconnect()
 
 
+app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(user_router)
 app .include_router(auth_router)
 app.include_router(main_router)
@@ -35,3 +37,4 @@ AUTH = ""
 
 print("Уведомления в websocket: взаимные лайки, добавил в избранное")
 print("create websocket(logic work with db in endpoints, logic work with real time in consumer")
+print("add dote_env")

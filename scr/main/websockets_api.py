@@ -1,12 +1,11 @@
-from fastapi import APIRouter, Request, Depends, WebSocket
+from fastapi import APIRouter, Request, WebSocket
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 
-from config.dependecies import get_current_user
 from scr.users import models as user_models
+from scr.main import services as main_services
 
-
-websocket_router = APIRouter(prefix="/ws", tags=["/ws"])
+websocket_router = APIRouter(prefix="/ws", tags=["ws"])
 templates = Jinja2Templates(directory="templates")
 
 
@@ -14,7 +13,10 @@ templates = Jinja2Templates(directory="templates")
 async def notification(request: Request):
     """Websocket for notifications"""
 
-    context = {"request": request, "photo_id": 1}
+    current_user = await user_models.Users.objects.first()
+    users = await main_services.get_users(current_user)
+    token = await user_models.Token.objects.get_or_none(user=current_user)
+    context = {"request": request, "current_user": current_user, "token": token.token, "found_users": users}
     return templates.TemplateResponse(name="base.html", context=context)
 
 
@@ -23,19 +25,3 @@ async def send_notification(websocket: WebSocket):
     """Send notification in real life"""
 
     await websocket.accept()
-
-
-async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
-
-    current_user = None
-
-    while True:
-        data = await websocket.receive_text()
-        video_id, username = data.split(", ")
-
-        if not current_user:
-            current_user = await services.get_user_by_username(username)
-
-        count_likes = await set_like(int(video_id), current_user)
-        await websocket.send_text(f"{count_likes}")

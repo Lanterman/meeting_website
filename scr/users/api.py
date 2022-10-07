@@ -22,12 +22,13 @@ async def auth(form_data: OAuth2PasswordRequestForm = Depends()):
     """User authenticated - endpoint"""
 
     user = await services.get_user_by_email(form_data.username)
+    error = HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Incorrect email or password!")
 
     if not user:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Incorrect email or password!")
+        raise error
 
     if not services.validate_password(form_data.password, user.password):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Incorrect email or password!")
+        raise error
 
     token = await services.create_user_token(user_id=user.id)
     return token

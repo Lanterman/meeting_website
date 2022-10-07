@@ -3,6 +3,9 @@
 __pycache__/
 
 uploaded_photo/*
-alembic/versions/*
+alembic/versions/*.py
 
 meeting_website.db
+test.db
+
+.pytest_cache
