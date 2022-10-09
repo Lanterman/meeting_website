@@ -4,7 +4,7 @@ import ormar
 from fastapi import HTTPException, status
 from ormar import exceptions
 
-from config.utils import user_validation_check, GENDER
+from config.utils import user_validation_check, settings
 from . import models, schemas
 from scr.users import services as user_services
 
@@ -62,7 +62,7 @@ async def get_users(user) -> list[models.Users] or []:
 
     query = await models.Users.objects.select_related("photo_set").exclude(id=user.id).all(
         ormar.and_(age__gte=search_parameters.search_by_age_to, age__lte=search_parameters.search_by_age_from),
-        gender__in=[search_gender] if search_gender != "Both" else GENDER,
+        gender__in=[search_gender] if search_gender != "Both" else settings.GENDER,
         is_activated=True
     )
 

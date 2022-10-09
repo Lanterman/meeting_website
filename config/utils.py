@@ -1,38 +1,53 @@
 import os
+
 import ormar
+import logging
 
+from typing import Any, Optional, Dict
 from pathlib import Path
-
+from dotenv import load_dotenv
 from fastapi import HTTPException, status
-from pydantic import BaseModel
+from fastapi_mail import ConnectionConfig
+from pydantic import BaseModel, BaseSettings
 
 from .db import metadata, database
 
 
-# JWT settings
-ALGORITHM = "HS256"
+load_dotenv()
 
 # Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 PATH_TO_USER_DIRECTORIES = f"{BASE_DIR}/uploaded_photo"
 
-# DB settings
-GENDER = ["Man", "Girl"]
-AGE = list(range(15, 81))
-SEARCH_BY_GENDER = ["Man", "Girl", "Both"]
 
-# Photo types
-EXTENSION_TYPES = ["image/jpeg", "image/bmp", "image/png", "image/jpg", "image/gif"]
+conf = ConnectionConfig(
+    MAIL_USERNAME="Дмитрий Кливчинский",
+    MAIL_PASSWORD=os.environ['MAIL_PASSWORD'],
+    MAIL_FROM=os.environ['MAIL_FROM'],
+    MAIL_PORT=os.environ['MAIL_PORT'],
+    MAIL_SERVER=os.environ['MAIL_SERVER'],
+    MAIL_TLS=True,
+    MAIL_SSL=False,
+    USE_CREDENTIALS=True,
+    VALIDATE_CERTS=True
+)
 
-# Domain
-DOMAIN = "http://127.0.0.1:8000"
 
-# Google settings
-GOOGLE_CLIENT_ID = "20078867313-13unphkqp5m9pbnhpod0nqcin6knte8d.apps.googleusercontent.com"
-GOOGLE_SECRET = "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"
-GOOGLE_REDIRECT = f"{DOMAIN}/google/redirect"
+class LockedError(HTTPException):
+    def __init__(self, status_code: int, detail: Any = None, headers: Optional[Dict[str, Any]] = None):
+        logging.fatal(msg=detail)
+        super().__init__(status_code=status_code, detail=detail, headers=headers)
 
-os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = '1'
+
+class Settings(BaseSettings):
+
+    GENDER = ["Man", "Girl"]
+    AGE = list(range(15, 81))
+    SEARCH_BY_GENDER = ["Man", "Girl", "Both"]
+    EXTENSION_TYPES = ["image/jpeg", "image/bmp", "image/png", "image/jpg", "image/gif"]
+
+
+settings = Settings()
 
 
 class MainMeta(ormar.ModelMeta):

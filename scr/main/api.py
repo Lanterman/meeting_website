@@ -1,3 +1,5 @@
+import os
+
 from fastapi import APIRouter, Depends, status, Form
 from fastapi.responses import RedirectResponse
 
@@ -71,7 +73,7 @@ async def delete_like(user_id: int, current_user: models.Users = Depends(get_cur
     user = await user_services.get_user_by_id(user_id)
 
     await services.delete_like(user, current_user)
-    return {"detail": "successful!"}
+    return {"detail": "Successful!"}
 
 
 @main_router.get("/favorites", response_model=schemas.OutputFavorite)
@@ -118,7 +120,7 @@ async def create_chat(user_id: int, current_user: models.Users = Depends(get_cur
     """Create chat and redirect to chat - endpoint"""
 
     chat_id = await services.create_chat(user_id, current_user)
-    return RedirectResponse(url=f"{utils.DOMAIN}/chat/{chat_id}/")
+    return RedirectResponse(url=f"{os.environ['DOMAIN']}/chat/{chat_id}/")
 
 
 @main_router.post("/chat/{chat_id}/send_msg", response_model=schemas.Message, status_code=status.HTTP_201_CREATED)

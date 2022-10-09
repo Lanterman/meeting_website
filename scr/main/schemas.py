@@ -27,10 +27,10 @@ class CreateSearch(utils.BaseSearchOptions):
     def is_gender_allowed(cls, value):
         """Check if gender is allowed"""
 
-        if value not in utils.SEARCH_BY_GENDER:
+        if value not in utils.settings.SEARCH_BY_GENDER:
             raise HTTPException(
                 status_code=status.HTTP_406_NOT_ACCEPTABLE,
-                detail=f"No such gender! Allowed list: {', '.join(utils.SEARCH_BY_GENDER)}")
+                detail=f"No such gender! Allowed list: {', '.join(utils.settings.SEARCH_BY_GENDER)}")
         return value
 
     @validator("search_by_age_to")

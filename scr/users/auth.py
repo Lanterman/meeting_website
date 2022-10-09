@@ -1,14 +1,16 @@
+import os
+
 from fastapi import APIRouter, Request, BackgroundTasks
 from fastapi_sso.sso.google import GoogleSSO
 from fastapi.templating import Jinja2Templates
 
-from config import utils
 from scr.users import schemas as user_schemas, services as user_services
 
 auth_router = APIRouter(tags=["auth"])
 templates = Jinja2Templates(directory="templates")
 
-google_sso = GoogleSSO(utils.GOOGLE_CLIENT_ID, utils.GOOGLE_SECRET, utils.GOOGLE_REDIRECT, allow_insecure_http=True)
+google_sso = GoogleSSO(os.environ["GOOGLE_CLIENT_ID"], os.environ["GOOGLE_SECRET"], os.environ["GOOGLE_REDIRECT"],
+                       allow_insecure_http=True)
 
 
 @auth_router.get("/", include_in_schema=False)

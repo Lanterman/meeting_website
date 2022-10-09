@@ -119,17 +119,17 @@ class UpdateUserInfo(BaseUser):
     def is_gender_allowed(cls, value):
         """Check if gender is allowed"""
 
-        if value not in utils.GENDER:
+        if value not in utils.settings.GENDER:
             raise HTTPException(
                 status_code=status.HTTP_406_NOT_ACCEPTABLE,
-                detail=f"No such gender! Allowed list: {', '.join(utils.GENDER)}")
+                detail=f"No such gender! Allowed list: {', '.join(utils.settings.GENDER)}")
         return value
 
     @validator("age")
     def check_age(cls, value):
         """Check if age is more than 15 and less than 80"""
 
-        if value not in utils.AGE:
+        if value not in utils.settings.AGE:
             raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Age must be over 15 and under 80!")
 
         return value

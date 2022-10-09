@@ -46,6 +46,19 @@ async def create_user(form_data: schemas.CreateUser, back_task: BackgroundTasks)
     return await services.create_user(form_data, back_task)
 
 
+@user_router.get("/activate_account", include_in_schema=False)
+async def activate_account(current_user: models.Users = Depends(get_current_user)):
+    """Activate user account - endpoint"""
+
+    # user = await services.get_user_by_id(user_id)
+    #
+    # if not user:
+    #     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found!")
+
+    await services.activate_account(current_user)
+    return {"detail": "User account activated!"}
+
+
 @user_router.put("/update_info", status_code=status.HTTP_202_ACCEPTED, response_model=schemas.UpdateUserInfo)
 async def update_user_info(form_data: schemas.UpdateUserInfo, current_user: models.Users = Depends(get_current_user)):
     """Update user information - endpoint"""

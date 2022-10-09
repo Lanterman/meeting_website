@@ -1,8 +1,7 @@
 import datetime
-
 import ormar
 
-from config.utils import MainMeta, SEARCH_BY_GENDER
+from config.utils import MainMeta, settings
 from scr.users.models import Users
 
 
@@ -11,7 +10,7 @@ class SearchOptions(ormar.Model):
         tablename = "search_options"
 
     id: int = ormar.Integer(primary_key=True, index=True)
-    search_by_gender: str = ormar.String(max_length=4, choices=SEARCH_BY_GENDER)
+    search_by_gender: str = ormar.String(max_length=4, choices=settings.SEARCH_BY_GENDER)
     search_by_age_to: int = ormar.Integer(default=10)
     search_by_age_from: int = ormar.Integer(default=20)
     user: int = ormar.ForeignKey(to=Users, ondelete="CASCADE", related_name="search")

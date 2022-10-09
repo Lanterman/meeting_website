@@ -10,8 +10,10 @@ import uuid
 
 from random import choice
 from fastapi import BackgroundTasks, UploadFile, HTTPException, status
+from fastapi_mail import FastMail, MessageSchema
+from pydantic import EmailStr
 
-from config.utils import PATH_TO_USER_DIRECTORIES, ALGORITHM, EXTENSION_TYPES
+from config.utils import PATH_TO_USER_DIRECTORIES, settings, conf
 from . import models, schemas
 
 
@@ -104,9 +106,20 @@ async def create_user_token(user_id: int) -> models.Token:
     await delete_user_token(user_id)
 
     _secret_key = await create_random_user_secret_key(user_id=user_id)
-    _token = jwt.encode(payload={"user_id": user_id}, key=_secret_key, algorithm=ALGORITHM)
+    _token = jwt.encode(payload={"user_id": user_id}, key=_secret_key, algorithm=os.environ["ALGORITHM"])
     query = await models.Token.objects.create(token=_token, user=user_id)
     return query
+
+
+async def send_link_to_mail(email: EmailStr, token: str) -> None:
+    """Send user account activation link to mail"""
+
+    link = f"{os.environ['DOMAIN']}/user/activate_account"
+    authorization = {"Authorization": f"Bearer {token}"}
+    print(link)
+    message = MessageSchema(subject="Activate account", recipients=[email], body=link, headers=authorization)
+    fm = FastMail(conf)
+    await fm.send_message(message)
 
 
 async def create_user(form_data: schemas.CreateUser, back_task: BackgroundTasks) -> dict:
@@ -117,11 +130,11 @@ async def create_user(form_data: schemas.CreateUser, back_task: BackgroundTasks)
     form_data.password = f"{salt}${hashed_password}"
     query = await models.Users.objects.create(**form_data.dict())
 
-    back_task.add_task(create_user_directory, query.id)
-
     token = await create_user_token(user_id=query.id)
-
     token_info = {"token": token.token, "expires": token.expires}
+
+    back_task.add_task(create_user_directory, query.id)
+    back_task.add_task(send_link_to_mail, form_data.email, token.token)
 
     return {**form_data.dict(), "token": token_info}
 
@@ -147,21 +160,21 @@ async def add_photo(file: UploadFile, user: models.Users) -> str:
     content_type = file.content_type.split("/")[-1]
     path_to_photo = f"uploaded_photo/{user.id}/{uuid.uuid4()}.{content_type}"
 
-    if file.content_type in EXTENSION_TYPES:
-        async with aiofiles.open(path_to_photo, "wb") as buffer:
-            data = await file.read()
-            await buffer.write(data)
-    else:
+    if file.content_type not in settings.EXTENSION_TYPES:
         raise HTTPException(
             detail="Unsupported content type! Must be jpeg, bmp, png, jpg or gif!",
             status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
         )
 
+    async with aiofiles.open(path_to_photo, "wb") as buffer:
+        data = await file.read()
+        await buffer.write(data)
+
     photo = await models.Photo.objects.create(path_to_photo=path_to_photo, user=user.id)
     return photo.path_to_photo
 
 
-async def get_photo(photo_id: int):
+async def get_photo(photo_id: int) -> models.Photo:
     """Get photo"""
 
     query = await models.Photo.objects.get_or_none(id=photo_id)
@@ -175,6 +188,12 @@ async def delete_user(back_task: BackgroundTasks, user: models.Users) -> int:
 
     query = await user.delete()
     return query
+
+
+async def activate_account(current_user) -> None:
+    """Activate user account"""
+
+    await current_user.update(is_activated=True)
 
 
 async def update_city(city: str, current_user: models.Users) -> models.Users:
