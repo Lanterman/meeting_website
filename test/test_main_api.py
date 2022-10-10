@@ -45,7 +45,7 @@ async def test_set_like():
     assert request.status_code == 200, request.text
     assert incorrect_request_1.status_code == 400, incorrect_request_1.text
     assert incorrect_request_2.status_code == 404, incorrect_request_2.text
-    assert data["like"]["email"] == "test_user_girl@example.com", request.text
+    assert data["like"]["email"] == "test_girl@example.com", request.text
     assert incorrect_data_1["detail"] == "You can not like yourself!", incorrect_request_1.text
     assert incorrect_data_2["detail"] == "Not found!", incorrect_request_2.text
 
@@ -81,7 +81,7 @@ async def test_add_to_favorites():
     assert request.status_code == 200, request.text
     assert incorrect_request_1.status_code == 400, incorrect_request_1.text
     assert incorrect_request_2.status_code == 404, incorrect_request_2.text
-    assert data["favorite"]["email"] == "test_user_girl@example.com", request.text
+    assert data["favorite"]["email"] == "test_girl@example.com", request.text
     assert incorrect_data_1["detail"] == "You can not add yourself to favorites!", incorrect_request_1.text
     assert incorrect_data_2["detail"] == "Not found!", incorrect_request_2.text
 

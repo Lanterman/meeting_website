@@ -1,5 +1,4 @@
 import os
-
 import ormar
 import logging
 
@@ -21,15 +20,14 @@ PATH_TO_USER_DIRECTORIES = f"{BASE_DIR}/uploaded_photo"
 
 
 conf = ConnectionConfig(
-    MAIL_USERNAME="Дмитрий Кливчинский",
-    MAIL_PASSWORD=os.environ['MAIL_PASSWORD'],
-    MAIL_FROM=os.environ['MAIL_FROM'],
-    MAIL_PORT=os.environ['MAIL_PORT'],
-    MAIL_SERVER=os.environ['MAIL_SERVER'],
-    MAIL_TLS=True,
-    MAIL_SSL=False,
-    USE_CREDENTIALS=True,
-    VALIDATE_CERTS=True
+    MAIL_USERNAME=os.environ["MAIL_USERNAME"],
+    MAIL_PASSWORD=os.environ["MAIL_PASSWORD"],
+    MAIL_FROM=os.environ["MAIL_FROM"],
+    MAIL_FROM_NAME=os.environ["MAIL_FROM_NAME"],
+    MAIL_PORT=os.environ["MAIL_PORT"],
+    MAIL_SERVER=os.environ["MAIL_SERVER"],
+    MAIL_TLS=False,
+    MAIL_SSL=True,
 )
 
 

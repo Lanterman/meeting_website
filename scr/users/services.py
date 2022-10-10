@@ -1,12 +1,11 @@
-import datetime
 import os
-
-import aiofiles as aiofiles
 import jwt
+import uuid
 import string
 import secrets
 import hashlib
-import uuid
+import datetime
+import aiofiles as aiofiles
 
 from random import choice
 from fastapi import BackgroundTasks, UploadFile, HTTPException, status
@@ -57,14 +56,14 @@ def remove_user_directory(user_id) -> None:
 async def get_user_by_email(email: str) -> models.Users or None:
     """Get user or none"""
 
-    query = await models.Users.objects.get_or_none(email=email, is_activated=True)
+    query = await models.Users.objects.get_or_none(email=email)
     return query
 
 
 async def get_user_by_id(user_id: int) -> models.Users or None:
     """Get user by id"""
 
-    query = await models.Users.objects.get_or_none(id=user_id, is_activated=True)
+    query = await models.Users.objects.get_or_none(id=user_id)
     return query
 
 
@@ -111,13 +110,13 @@ async def create_user_token(user_id: int) -> models.Token:
     return query
 
 
-async def send_link_to_mail(email: EmailStr, token: str) -> None:
+async def send_link_to_mail(email: EmailStr, user_id: int) -> None:
     """Send user account activation link to mail"""
 
-    link = f"{os.environ['DOMAIN']}/user/activate_account"
-    authorization = {"Authorization": f"Bearer {token}"}
-    print(link)
-    message = MessageSchema(subject="Activate account", recipients=[email], body=link, headers=authorization)
+    link = f"{os.environ['DOMAIN']}/user/{user_id}/activate_account"
+    body = f"To activate your account follow the link: {link}"
+
+    message = MessageSchema(subject="Activate account", recipients=[email], body=body, subtype="plain")
     fm = FastMail(conf)
     await fm.send_message(message)
 
@@ -134,7 +133,9 @@ async def create_user(form_data: schemas.CreateUser, back_task: BackgroundTasks)
     token_info = {"token": token.token, "expires": token.expires}
 
     back_task.add_task(create_user_directory, query.id)
-    back_task.add_task(send_link_to_mail, form_data.email, token.token)
+
+    if not query.is_activated:
+        back_task.add_task(send_link_to_mail, form_data.email, query.id)
 
     return {**form_data.dict(), "token": token_info}
 

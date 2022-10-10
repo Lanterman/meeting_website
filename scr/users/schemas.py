@@ -20,6 +20,7 @@ class BaseUser(BaseModel):
     age: int
     city: str
     description: str
+    is_activated: bool = False
 
 
 class UpdateUserInfo(BaseUser):

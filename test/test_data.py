@@ -9,19 +9,19 @@ token = ctypes.c_wchar_p(" ")
 
 user_info_1 = {
     "first_name": "string", "last_name": "string", "email": "test_user@example.com", "phone": 2113111311111,
-    "gender": "Man", "age": 22, "city": "string", "description": "string", "password": "123412341234"
+    "gender": "Man", "age": 22, "city": "string", "description": "", "password": "123412341234", "is_activated": True
 }
 user_info_2 = {
-    "first_name": "string", "last_name": "string", "email": "test_user_girl@example.com", "phone": 2113111311111,
-    "gender": "Girl", "age": 22, "city": "string", "description": "string", "password": "123412341234"
+    "first_name": "string", "last_name": "string", "email": "test_girl@example.com", "phone": 2113111311111,
+    "gender": "Girl", "age": 22, "city": "string", "description": "", "password": "123412341234", "is_activated": True
 }
 updated_user_info = {
-    "first_name": "test", "last_name": "test", "email": "test_user1@example.com", "phone": 2113111311111,
-    "gender": "Man", "age": 20, "city": "string", "description": "string", "password": "123412341234"
+    "first_name": "test", "last_name": "test", "email": "test_1@example.com", "phone": 2113111311111, "gender": "Man",
+    "age": 20, "city": "string", "description": "string", "password": "123412341234", "is_activated": True
 }
 incorrect_user_info = {
-    "first_name": "string", "last_name": "string", "email": "user@example.com", "phone": 2113111311111,
-    "gender": "man", "age": 22, "city": "string", "description": "string", "password": "123412341234"
+    "first_name": "string", "last_name": "string", "email": "user@example.com", "phone": 2113111311111, "gender": "man",
+    "age": 22, "city": "string", "description": "string", "password": "123412341234", "is_activated": True
 }
 
 password_reset_data = {"old_password": "123412341234", "new_password": "12341234123", "confirm_password": "12341234123"}

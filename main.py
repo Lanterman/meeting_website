@@ -40,7 +40,6 @@ AUTH = ""
 
 # print("Уведомления в websocket: взаимные лайки, добавил в избранное")
 # print("create websocket(logic work with db in endpoints, logic work with real time in consumer")
-print("redo activate account by mail")
 
 if __name__ == "__main__":
 
