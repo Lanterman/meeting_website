@@ -7,8 +7,8 @@ import sqlalchemy
 TESTING = False
 
 # DATABASE_URL = "sqlite:///./meeting_website.db"
-DATABASE_URL = "postgresql://lanterman:karmavdele@localhost/meeting_website"
-# DATABASE_URL = "postgresql:///postgres:postgres@postgres_db/postgres"
+# DATABASE_URL = "postgresql://lanterman:karmavdele@localhost/meeting_website"
+DATABASE_URL = "postgresql://postgres:postgres@postgres_db:5432/postgres"
 
 TESTING_DATABASE_URL = "sqlite:///./test.db"
 # TESTING_DATABASE_URL = "postgresql:///postgres:postgres@postgres_db/test_postgres"

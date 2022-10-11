@@ -36,10 +36,7 @@ app.include_router(auth_router)
 app.include_router(main_router)
 app.include_router(websocket_router)
 
-AUTH = ""
 
-# print("Уведомления в websocket: взаимные лайки, добавил в избранное")
-# print("create websocket(logic work with db in endpoints, logic work with real time in consumer")
 
 if __name__ == "__main__":
 
