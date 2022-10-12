@@ -27,6 +27,9 @@ async def auth(form_data: OAuth2PasswordRequestForm = Depends()):
     if not user:
         raise error
 
+    if not user.is_activated:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user!")
+
     if not services.validate_password(form_data.password, user.password):
         raise error
 
