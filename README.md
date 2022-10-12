@@ -39,5 +39,5 @@ config.db.TESTING = True
 ```
 #### 2) Run tests
 ```
-docker-compose up --build
+python -m pytest test
 ```

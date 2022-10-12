@@ -3,7 +3,10 @@
 __pycache__/
 
 uploaded_photo/*
-alembic/versions/*.py
+!uploaded_photo/__init__.py
+
+alembic/versions/*
+!alembic/versions/__init__.py
 
 meeting_website.db
 test.db
