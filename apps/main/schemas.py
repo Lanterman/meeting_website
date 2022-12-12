@@ -4,7 +4,7 @@ from pydantic import BaseModel, validator
 from fastapi import HTTPException, status
 
 from config import utils
-from scr.users import schemas as user_schemas
+from apps.users import schemas as user_schemas
 
 
 class BasePhoto(BaseModel):

@@ -1,8 +1,8 @@
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import HTTPException, status, Depends
 
-from scr.users import services as user_services
-from scr.main import services as main_services
+from apps.users import services as user_services
+from apps.main import services as main_services
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/user/auth")

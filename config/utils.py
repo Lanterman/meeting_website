@@ -4,7 +4,6 @@ import logging
 
 from typing import Any, Optional, Dict
 from pathlib import Path
-from dotenv import load_dotenv
 from fastapi import HTTPException, status
 from fastapi_mail import ConnectionConfig
 from pydantic import BaseModel, BaseSettings
@@ -12,11 +11,11 @@ from pydantic import BaseModel, BaseSettings
 from .db import metadata, database
 
 
-load_dotenv()
-
 # Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 PATH_TO_USER_DIRECTORIES = f"{BASE_DIR}/uploaded_photo"
+
+DOMAIN = os.environ.get("DOC_DOMAIN", os.environ["DOMAIN"])
 
 
 conf = ConnectionConfig(

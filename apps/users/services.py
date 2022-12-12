@@ -12,6 +12,7 @@ from fastapi import BackgroundTasks, UploadFile, HTTPException, status
 from fastapi_mail import FastMail, MessageSchema
 from pydantic import EmailStr
 
+from config import utils
 from config.utils import PATH_TO_USER_DIRECTORIES, settings, conf
 from . import models, schemas
 
@@ -113,7 +114,7 @@ async def create_user_token(user_id: int) -> models.Token:
 async def send_link_to_mail(email: EmailStr, user_id: int) -> None:
     """Send user account activation link to mail"""
 
-    link = f"{os.environ['DOMAIN']}/user/{user_id}/activate_account"
+    link = f"{utils.DOMAIN}/user/{user_id}/activate_account"
     body = f"To activate your account follow the link: {link}"
 
     message = MessageSchema(subject="Activate account", recipients=[email], body=body, subtype="plain")

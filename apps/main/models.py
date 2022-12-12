@@ -2,7 +2,7 @@ import datetime
 import ormar
 
 from config.utils import MainMeta, settings
-from scr.users.models import Users
+from apps.users.models import Users
 
 
 class SearchOptions(ormar.Model):

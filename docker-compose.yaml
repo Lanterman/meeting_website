@@ -18,6 +18,8 @@ services:
       context: ./
       dockerfile: DockerFile
     command: python main.py
+    env_file:
+      - ./.env.dev
     volumes:
       - os_data:/app
     ports:

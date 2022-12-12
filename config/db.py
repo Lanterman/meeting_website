@@ -1,17 +1,18 @@
+import os
 import databases
 import sqlalchemy
 
+from dotenv import load_dotenv
+
+load_dotenv(dotenv_path=".env")
 
 # To run the project, you need to set the TESTING variable to False.
 # To run the tests, you need to set the TESTING variable to True.
 TESTING = False
 
-# DATABASE_URL = "sqlite:///./meeting_website.db"
-# DATABASE_URL = "postgresql://lanterman:karmavdele@localhost/meeting_website"
-DATABASE_URL = "postgresql://postgres:postgres@postgres_db:5432/postgres"
+DATABASE_URL = os.environ.get("DOC_DATABASE_URL", os.environ["DATABASE_URL"])
 
-TESTING_DATABASE_URL = "sqlite:///./test.db"
-# TESTING_DATABASE_URL = "postgresql:///postgres:postgres@postgres_db/test_postgres"
+TESTING_DATABASE_URL = os.environ.get("DOC_TESTING_DATABASE_URL", os.environ["TESTING_DATABASE_URL"])
 
 metadata = sqlalchemy.MetaData()
 

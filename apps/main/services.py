@@ -6,7 +6,7 @@ from ormar import exceptions
 
 from config.utils import user_validation_check, settings
 from . import models, schemas
-from scr.users import services as user_services
+from apps.users import services as user_services
 
 
 def full_name(user: models.Users) -> str:

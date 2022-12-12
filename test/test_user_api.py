@@ -3,8 +3,8 @@ import pytest
 from httpx import AsyncClient
 
 from main import app
-from scr.users import models as user_models
-from scr.main import models as main_models
+from apps.users import models as user_models
+from apps.main import models as main_models
 from test.test_data import token, user_url as url, updated_user_info, incorrect_user_info, password_reset_data, \
     invalid_password_reset_data
 

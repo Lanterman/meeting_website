@@ -1,7 +1,9 @@
-import os
 import ctypes
 
-main_url = os.environ["DOMAIN"]
+from config import utils
+
+
+main_url = utils.DOMAIN
 user_url = f"{main_url}/user"
 
 

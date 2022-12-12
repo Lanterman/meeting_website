@@ -1,2 +1,2 @@
-from scr.users import models
+from apps.users import models
 from .db import metadata

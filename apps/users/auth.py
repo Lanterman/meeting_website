@@ -4,7 +4,7 @@ from fastapi import APIRouter, Request, BackgroundTasks
 from fastapi_sso.sso.google import GoogleSSO
 from fastapi.templating import Jinja2Templates
 
-from scr.users import schemas as user_schemas, services as user_services
+from apps.users import schemas as user_schemas, services as user_services
 
 auth_router = APIRouter(tags=["auth"])
 templates = Jinja2Templates(directory="templates")

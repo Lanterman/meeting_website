@@ -2,8 +2,8 @@ from fastapi import APIRouter, Request, WebSocket
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 
-from scr.users import models as user_models
-from scr.main import services as main_services
+from apps.users import models as user_models
+from apps.main import services as main_services
 
 websocket_router = APIRouter(prefix="/ws", tags=["ws"])
 templates = Jinja2Templates(directory="templates")

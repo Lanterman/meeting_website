@@ -1,12 +1,10 @@
-import os
-
 from fastapi import APIRouter, Depends, status, Form
 from fastapi.responses import RedirectResponse
 
 from config import utils
 from config.dependecies import get_current_user
 from . import schemas, models, services
-from scr.users import services as user_services
+from apps.users import services as user_services
 
 
 main_router = APIRouter(tags=["main"])
@@ -120,7 +118,8 @@ async def create_chat(user_id: int, current_user: models.Users = Depends(get_cur
     """Create chat and redirect to chat - endpoint"""
 
     chat_id = await services.create_chat(user_id, current_user)
-    return RedirectResponse(url=f"{os.environ['DOMAIN']}/chat/{chat_id}/")
+
+    return RedirectResponse(url=f"{utils.DOMAIN}/chat/{chat_id}/")
 
 
 @main_router.post("/chat/{chat_id}/send_msg", response_model=schemas.Message, status_code=status.HTTP_201_CREATED)

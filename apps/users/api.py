@@ -94,8 +94,8 @@ async def add_photo(photo: UploadFile = File(), current_user: models.Users = Dep
     return {"path_to_photo": path_to_photo, "photo": photo}
 
 
-@user_router.get("/show_photo/{photo_id}")
-async def show_photo(photo_id: int, current_user: models.Users = Depends(get_current_user)):
+@user_router.get("/show_photo/{photo_id}", dependencies=[Depends(get_current_user)])
+async def show_photo(photo_id: int):
     """Show photo - endpoint"""
 
     photo = await services.get_photo(photo_id)
